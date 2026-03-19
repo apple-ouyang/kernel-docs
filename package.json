@@ -1,0 +1,10 @@
+{
+  "name": "kernel-docs",
+  "private": true,
+  "scripts": {
+    "docs:list": "tsx scripts/docs-list.ts .",
+    "docs:lint": "tsx scripts/docs-lint.ts .",
+    "docs:migrate": "tsx scripts/docs-migrate.ts .",
+    "test": "node --test tests/*.test.mjs"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "skill_name": "kernel-code-research",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "先帮我读一下缺页异常处理链路，然后把代码调研结果整理成 docs/memory 下的一篇长期文档。",
+      "expected_output": "应该先检查 docs 入口，再把调研结果写入 docs/memory/code-reading-*.md，front matter 至少包含 summary 和 read_when。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我想系统理解调度器和线程切换，读代码后给我沉淀一篇能反复看的文档，不要写 TODO 计划。",
+      "expected_output": "应该把进程、线程、调度相关内容归到 arch，而不是新建 process 目录，也不应输出 plan 风格文档。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "帮我梳理驱动框架初始化路径，重点记录关键结构、调用链和容易改坏的地方。",
+      "expected_output": "应该围绕模块边界、关键结构、调用链和风险点组织正文，并输出到 docs/drivers/ 下。",
+      "files": []
+    }
+  ]
+}

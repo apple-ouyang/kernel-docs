@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+
+if ! command -v tsx >/dev/null 2>&1; then
+  echo "缺少 tsx，请先执行 ./scripts/docs-bootstrap.sh"
+  exit 1
+fi
+
+STAGED_DOCS=()
+while IFS= read -r line; do
+  if [ -n "$line" ]; then
+    STAGED_DOCS+=("$line")
+  fi
+done < <(git -C "$ROOT_DIR" diff --cached --name-only --diff-filter=ACMR -- ':(glob)docs/**/*.md')
+
+if [ "${#STAGED_DOCS[@]}" -eq 0 ]; then
+  exit 0
+fi
+
+echo "校验文档 front matter..."
+tsx "$ROOT_DIR/scripts/docs-lint.ts" "$ROOT_DIR" --files "${STAGED_DOCS[@]}"
