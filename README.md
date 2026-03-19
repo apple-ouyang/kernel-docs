@@ -62,3 +62,4 @@ read_when:
 - `kernel-code-research`: 读代码后，把调研结果直接写进对应领域目录
 
 安装脚本会把这两个 Skill 安装到 Claude Code。
+它也会安装 `~/.claude/bin/docs-list`、`docs-lint`、`docs-migrate`，并同步全局 `~/.claude/CLAUDE.md` 里的 Docs 提示词。

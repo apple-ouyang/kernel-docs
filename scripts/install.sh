@@ -13,4 +13,7 @@ else
   npx skills add "$ROOT_DIR" --full-depth -g -a claude-code -s kernel-docs-system kernel-code-research -y
 fi
 
+bash "$ROOT_DIR/scripts/install-global-bin.sh"
+tsx "$ROOT_DIR/scripts/sync-global-claude.ts"
+
 echo "文档 Skill 安装完成。"
