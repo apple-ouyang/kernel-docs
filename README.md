@@ -4,8 +4,9 @@
 
 ## 快速开始
 
+在仓库根目录执行：
+
 ```bash
-cd ~/code/kernel-docs
 ./scripts/install.sh
 ```
 
