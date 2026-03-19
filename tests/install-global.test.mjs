@@ -53,7 +53,7 @@ test("install-global-bin 安装全局 wrapper 并记录当前仓路径", () => {
 
     const wrapperContent = readFileSync(docsListPath, "utf8");
     assert.match(wrapperContent, /source "\$HOME\/\.claude\/kernel-docs\.env"/);
-    assert.match(wrapperContent, /exec tsx "\$KERNEL_DOCS_REPO\/scripts\/docs-list\.ts" "\$@"/);
+    assert.match(wrapperContent, /exec "\$KERNEL_DOCS_REPO\/scripts\/run-tsx\.sh" "\$KERNEL_DOCS_REPO\/scripts\/docs-list\.ts" "\$@"/);
     assert.ok((statSync(docsListPath).mode & 0o111) !== 0, "wrapper 应该可执行");
   });
 });

@@ -20,7 +20,7 @@ install_wrapper() {
 #!/usr/bin/env bash
 set -euo pipefail
 source "\$HOME/.claude/kernel-docs.env"
-exec tsx "\$KERNEL_DOCS_REPO/scripts/${target}" "\$@"
+exec "\$KERNEL_DOCS_REPO/scripts/run-tsx.sh" "\$KERNEL_DOCS_REPO/scripts/${target}" "\$@"
 EOF
 
   chmod +x "${BIN_DIR}/${name}"

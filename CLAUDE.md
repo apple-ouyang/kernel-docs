@@ -30,8 +30,8 @@
 
 ## 默认流程
 
-1. 编写或修改文档前，先运行 `tsx scripts/docs-list.ts .`
-2. 提交前运行 `tsx scripts/docs-lint.ts .`
-3. 旧文档补格式时运行 `tsx scripts/docs-migrate.ts . --write`
+1. 编写或修改文档前，先运行 `~/.claude/bin/docs-list /path/to/target-repo`
+2. 提交前运行 `~/.claude/bin/docs-lint /path/to/target-repo`
+3. 旧文档补格式时运行 `~/.claude/bin/docs-migrate /path/to/target-repo --write`
 4. 本地提交默认依赖 `.githooks/pre-commit`
 5. 仓内文档入口相关能力默认由 `kernel-docs-system` Skill 提供

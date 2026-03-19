@@ -13,11 +13,14 @@
 常用命令：
 
 ```bash
-tsx scripts/docs-list.ts .
-tsx scripts/docs-lint.ts .
-tsx scripts/docs-migrate.ts . --write
+~/.claude/bin/docs-list /path/to/target-repo
+~/.claude/bin/docs-lint /path/to/target-repo
+~/.claude/bin/docs-migrate /path/to/target-repo --write
 node --test tests/*.test.mjs
 ```
+
+如果系统里没有 `tsx`，脚本会自动先尝试 `npm install -g tsx`，失败后再回退到 `~/.claude/tools/tsx` 里的用户目录安装；两种方式都失败时，才提示手工安装。
+文档操作的推荐入口固定是 `~/.claude/bin/docs-*`，这样即使你当前人在别的代码仓里，也能直接指定目标仓路径。
 
 ## 目录规则
 

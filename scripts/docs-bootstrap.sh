@@ -3,19 +3,18 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-for cmd in node npx git; do
+for cmd in node npm npx git; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
     echo "缺少命令：$cmd"
     exit 1
   fi
 done
 
-if ! command -v tsx >/dev/null 2>&1; then
-  echo "缺少 tsx，请先安装：pnpm add -g tsx"
+if ! "$ROOT_DIR/scripts/ensure-tsx.sh" >/dev/null; then
   exit 1
 fi
 
-if ! npx skills --help >/dev/null 2>&1; then
+if ! npx -y skills --help >/dev/null 2>&1; then
   echo "无法调用 npx skills，请先确认 skills CLI 可用"
   exit 1
 fi
@@ -29,7 +28,6 @@ chmod +x "$ROOT_DIR"/skills/kernel-docs-system/scripts/*.ts
 
 echo "环境检查通过。"
 echo "可以使用："
-echo "  tsx scripts/docs-list.ts ."
-echo "  tsx scripts/docs-lint.ts ."
-echo "  tsx scripts/docs-migrate.ts . --write"
-echo "  ~/.claude/bin/docs-list ."
+echo "  ~/.claude/bin/docs-list /path/to/target-repo"
+echo "  ~/.claude/bin/docs-lint /path/to/target-repo"
+echo "  ~/.claude/bin/docs-migrate /path/to/target-repo --write"

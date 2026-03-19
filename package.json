@@ -2,9 +2,9 @@
   "name": "kernel-docs",
   "private": true,
   "scripts": {
-    "docs:list": "tsx scripts/docs-list.ts .",
-    "docs:lint": "tsx scripts/docs-lint.ts .",
-    "docs:migrate": "tsx scripts/docs-migrate.ts .",
+    "docs:list": "bash scripts/run-tsx.sh scripts/docs-list.ts .",
+    "docs:lint": "bash scripts/run-tsx.sh scripts/docs-lint.ts .",
+    "docs:migrate": "bash scripts/run-tsx.sh scripts/docs-migrate.ts .",
     "test": "node --test tests/*.test.mjs"
   }
 }
