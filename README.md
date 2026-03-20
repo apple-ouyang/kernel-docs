@@ -19,8 +19,26 @@
 node --test tests/*.test.mjs
 ```
 
+这些命令分别用于：
+
+- `docs-list`: 列出目标仓 `docs/` 下当前可参考的文档入口，默认隐藏 `archive`
+- `docs-lint`: 校验目标仓文档的 front matter 是否满足约定
+- `docs-migrate`: 给旧文档补齐统一模板，可配合 `--write` 直接落盘
+- `node --test tests/*.test.mjs`: 验证安装脚本、文档脚本和元数据规则没有回归
+
 如果系统里没有 `tsx`，脚本会自动先尝试 `npm install -g tsx`，失败后再回退到 `~/.claude/tools/tsx` 里的用户目录安装；两种方式都失败时，才提示手工安装。
 文档操作的推荐入口固定是 `~/.claude/bin/docs-*`，这样即使你当前人在别的代码仓里，也能直接指定目标仓路径。
+
+## 安装内容
+
+`./scripts/install.sh` 会安装或配置这些内容：
+
+- 运行环境检查：确认 `node`、`npm`、`npx`、`git` 可用，并确保 `tsx` 可运行
+- 本仓 pre-commit：将当前仓的 `core.hooksPath` 指向 `.githooks`
+- Claude Code skills：安装 `kernel-docs-system` 和 `kernel-code-research`
+- 全局命令：安装 `~/.claude/bin/docs-list`、`docs-lint`、`docs-migrate`
+- 全局提示词：把受管的 Docs 规则写入 `~/.claude/CLAUDE.md`
+- 全局环境文件：写入 `~/.claude/kernel-docs.env`，让全局命令知道当前 `kernel-docs` 仓的位置
 
 ## 目录规则
 
@@ -103,3 +121,20 @@ source:
 
 安装脚本会把这两个 Skill 安装到 Claude Code。
 它也会安装 `~/.claude/bin/docs-list`、`docs-lint`、`docs-migrate`，并同步全局 `~/.claude/CLAUDE.md` 里的 Docs 提示词。
+
+## 卸载
+
+如果要撤销这套安装，执行：
+
+```bash
+./scripts/uninstall.sh
+```
+
+卸载脚本会：
+
+- 移除全局 `docs-*` wrapper 和 `~/.claude/kernel-docs.env`
+- 清掉全局 `~/.claude/CLAUDE.md` 里的受管 Docs 区块
+- 撤销本仓 `core.hooksPath=.githooks`
+- 卸载安装到 Claude Code 的两个 skill
+
+它不会删除共享的 `tsx` 运行时。

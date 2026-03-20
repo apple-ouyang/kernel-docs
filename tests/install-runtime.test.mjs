@@ -20,6 +20,8 @@ const REPO_ROOT = resolve(THIS_DIR, "..");
 const DOCS_BOOTSTRAP = join(REPO_ROOT, "scripts", "docs-bootstrap.sh");
 const INSTALL_GLOBAL_BIN = join(REPO_ROOT, "scripts", "install-global-bin.sh");
 const INSTALL_SH = join(REPO_ROOT, "scripts", "install.sh");
+const UNINSTALL_PRE_COMMIT = join(REPO_ROOT, "scripts", "uninstall-pre-commit.sh");
+const UNINSTALL_SH = join(REPO_ROOT, "scripts", "uninstall.sh");
 const REAL_BASH = which("bash");
 const REAL_NODE = process.execPath;
 const REAL_TSX = which("tsx");
@@ -52,7 +54,8 @@ function createFakeBin(homeDir, options = {}) {
 
   writeExecutable(
     join(binDir, "git"),
-    `#!/usr/bin/env bash
+    options.gitScript ??
+      `#!/usr/bin/env bash
 set -euo pipefail
 exit 0
 `
@@ -248,5 +251,124 @@ exit 94
     assert.match(npxLog, /^-y skills --help$/m);
     assert.match(npxLog, /-y skills add .* -g -a claude-code .* -y/);
     assert.doesNotMatch(npxLog, /^skills --help$/m);
+  });
+});
+
+test("uninstall-pre-commit 仅在 hooksPath 为 .githooks 时撤销", () => {
+  withTempHome((homeDir) => {
+    const gitLogPath = join(homeDir, "git.log");
+    const binDir = createFakeBin(homeDir, {
+      gitScript: `#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\\n' "$*" >> "$FAKE_GIT_LOG"
+if [ "$#" -ge 3 ] && [ "$3" = "rev-parse" ]; then
+  exit 0
+fi
+if [ "$#" -ge 6 ] && [ "$3" = "config" ] && [ "$4" = "--local" ] && [ "$5" = "--get" ] && [ "$6" = "core.hooksPath" ]; then
+  printf '.githooks\\n'
+  exit 0
+fi
+if [ "$#" -ge 6 ] && [ "$3" = "config" ] && [ "$4" = "--local" ] && [ "$5" = "--unset" ] && [ "$6" = "core.hooksPath" ]; then
+  exit 0
+fi
+echo "unexpected git args: $*" >&2
+exit 95
+`,
+    });
+
+    const result = run("bash", [UNINSTALL_PRE_COMMIT], {
+      env: {
+        HOME: homeDir,
+        PATH: scopedPath(binDir),
+        FAKE_GIT_LOG: gitLogPath,
+      },
+    });
+
+    assert.equal(result.status, 0, result.stderr);
+
+    const gitLog = readFileSync(gitLogPath, "utf8");
+    assert.match(gitLog, /config --local --get core\.hooksPath/);
+    assert.match(gitLog, /config --local --unset core\.hooksPath/);
+  });
+});
+
+test("uninstall.sh 非交互调用 skills remove 并清理全局安装痕迹", () => {
+  withTempHome((homeDir) => {
+    const npxLogPath = join(homeDir, "npx.log");
+    const gitLogPath = join(homeDir, "git.log");
+    const claudeDir = join(homeDir, ".claude");
+    mkdirSync(join(claudeDir, "bin"), { recursive: true });
+    writeFileSync(join(claudeDir, "kernel-docs.env"), 'KERNEL_DOCS_REPO="/tmp/kernel-docs"\n', "utf8");
+    writeFileSync(join(claudeDir, "bin", "docs-list"), "#!/usr/bin/env bash\n", "utf8");
+    writeFileSync(join(claudeDir, "bin", "docs-lint"), "#!/usr/bin/env bash\n", "utf8");
+    writeFileSync(join(claudeDir, "bin", "docs-migrate"), "#!/usr/bin/env bash\n", "utf8");
+    writeFileSync(
+      join(claudeDir, "CLAUDE.md"),
+      `# 全局指令
+
+## 文档系统
+
+- 自定义规则
+
+<!-- kernel-docs:managed:start -->
+### Docs（由 kernel-docs 安装脚本维护）
+
+- 当前 kernel-docs 安装源：\`/tmp/kernel-docs\`
+<!-- kernel-docs:managed:end -->
+`,
+      "utf8"
+    );
+
+    const binDir = createFakeBin(homeDir, {
+      npxScript: `#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\\n' "$*" >> "$FAKE_NPX_LOG"
+if [ "$#" -ge 5 ] && [ "$1" = "-y" ] && [ "$2" = "skills" ] && [ "$3" = "remove" ] && [ "$4" = "-g" ] && [ "$5" = "-a" ]; then
+  exit 0
+fi
+echo "unexpected npx args: $*" >&2
+exit 96
+`,
+      gitScript: `#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\\n' "$*" >> "$FAKE_GIT_LOG"
+if [ "$#" -ge 3 ] && [ "$3" = "rev-parse" ]; then
+  exit 0
+fi
+if [ "$#" -ge 6 ] && [ "$3" = "config" ] && [ "$4" = "--local" ] && [ "$5" = "--get" ] && [ "$6" = "core.hooksPath" ]; then
+  printf '.githooks\\n'
+  exit 0
+fi
+if [ "$#" -ge 6 ] && [ "$3" = "config" ] && [ "$4" = "--local" ] && [ "$5" = "--unset" ] && [ "$6" = "core.hooksPath" ]; then
+  exit 0
+fi
+echo "unexpected git args: $*" >&2
+exit 97
+`,
+    });
+
+    const result = run("bash", [UNINSTALL_SH], {
+      env: {
+        HOME: homeDir,
+        PATH: scopedPath(binDir),
+        FAKE_NPX_LOG: npxLogPath,
+        FAKE_GIT_LOG: gitLogPath,
+      },
+    });
+
+    assert.equal(result.status, 0, result.stderr);
+
+    const npxLog = readFileSync(npxLogPath, "utf8");
+    assert.match(npxLog, /-y skills remove -g -a claude-code kernel-docs-system kernel-code-research -y/);
+    assert.equal(existsSync(join(claudeDir, "kernel-docs.env")), false);
+    assert.equal(existsSync(join(claudeDir, "bin", "docs-list")), false);
+    assert.equal(existsSync(join(claudeDir, "bin", "docs-lint")), false);
+    assert.equal(existsSync(join(claudeDir, "bin", "docs-migrate")), false);
+
+    const claudeContent = readFileSync(join(claudeDir, "CLAUDE.md"), "utf8");
+    assert.doesNotMatch(claudeContent, /kernel-docs:managed:start/);
+
+    const gitLog = readFileSync(gitLogPath, "utf8");
+    assert.match(gitLog, /config --local --unset core\.hooksPath/);
   });
 });
