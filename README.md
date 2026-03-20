@@ -24,18 +24,35 @@ node --test tests/*.test.mjs
 
 ## 目录规则
 
-文档统一放在 `docs/` 下，按领域分类，不再单独拆 `research/`、`plans/`：
+文档统一放在 `docs/` 下，先按操作系统线，再按领域分类：
 
-- `docs/arch/`: 架构、启动、调度、IPC、跨子系统机制
-- `docs/memory/`: 页表、分配器、缺页异常、内存管理
-- `docs/filesystem/`: VFS、文件系统实现、缓存一致性、IO 路径
-- `docs/dfx/`: 日志、trace、观测、诊断、性能分析
-- `docs/debug/`: GDB、崩溃分析、现场还原、调试方法
-- `docs/security/`: 权限、隔离、认证、访问控制、安全加固
-- `docs/drivers/`: 设备模型、总线、驱动框架、外设适配
-- `docs/archive/<domain>/`: 默认不展示的归档文档
+- `docs/v2/<domain>/`: V2，Linux 线
+- `docs/v3/<domain>/`: V3，鸿蒙线
+- `docs/lite/<domain>/`: Lite 线
+- `docs/<version>/archive/<domain>/`: 默认不展示的归档文档
 
 `process` 不再单独建类。进程、线程、调度、启动、IPC 默认归 `arch`。
+
+命名建议：
+
+- 文件名直接使用主题名即可，例如 `page-fault.md`
+- 版本差异由目录表达，不再靠文件名前缀区分
+- 同主题可以分别存在于 `v2/`、`v3/`、`lite/` 目录下
+
+版本判定规则：
+
+- 仓名以 `hm-` 开头：判定为 `v3`
+- 绝对路径包含 `RTOS_V3_master`：判定为 `v3`
+- 绝对路径包含 `RTOS_V2_master`：判定为 `v2`
+- 路径或仓名包含 `kernel-5.x`：判定为 `v2`
+- `lite` 代码仓规则暂未固定；当前只有在用户明确说是 `lite` 时，才按 `lite` 处理
+
+阅读规则：
+
+- 当前打开路径命中 `v2`：只看 `docs/v2/`，默认不看 `docs/v3/` 或 `docs/lite/`
+- 当前打开路径命中 `v3`：默认看 `docs/v3/`；只有用户明确要求参考 `v2` / `Linux` 时，才额外看 `docs/v2/`
+- 当前上下文被判定为 `lite`：先看 `docs/lite/`；不够时再补看 `docs/v2/`；默认不看 `docs/v3/`
+- 当前路径无法判断版本：先根据用户提到的 `V2` / `Linux` / `V3` / `鸿蒙` / `lite` 选择版本目录
 
 ## Front Matter
 
@@ -56,6 +73,26 @@ read_when:
 - 适合写成“修改什么前”“排查什么时”“判断什么是否相关时”
 
 不建议写成状态词、作者备注或空泛占位。
+
+`source` 如果需要写，语义是“这篇文档主要基于什么材料写成”，不是必须保存一个路径。
+
+- 随手放置、后续不需要追溯的临时材料，可以不写 `source`
+- 如果主要参考已有文档，记录文档名即可，不要求记录文档所在仓库或路径
+- 如果主要参考代码，写成 `git仓库名:仓内相对路径`
+- 不要求穷举所有参考文件，只记录主要来源；具体证据路径和行号放正文，不放 front matter
+
+例如：
+
+```yaml
+---
+summary: V3 页故障处理链路梳理
+read_when:
+  - 修改 V3 缺页异常处理前
+source:
+  - hm-verif-kernel: kernel/base/mm
+  - 《内存管理设计说明》
+---
+```
 
 ## Skill
 

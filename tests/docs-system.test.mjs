@@ -35,7 +35,7 @@ function runTsx(scriptPath, args = []) {
 test("docs-list 按领域分组并默认隐藏 archive", () => {
   withTempRepo((repoRoot) => {
     writeFile(
-      join(repoRoot, "docs", "memory", "overview-memory.md"),
+      join(repoRoot, "docs", "v3", "memory", "overview-memory.md"),
       `---
 summary: 内存子系统总览
 read_when:
@@ -47,7 +47,7 @@ read_when:
     );
 
     writeFile(
-      join(repoRoot, "docs", "archive", "memory", "old-memory-notes.md"),
+      join(repoRoot, "docs", "v3", "archive", "memory", "old-memory-notes.md"),
       `---
 summary: 旧版内存笔记
 read_when:
@@ -61,9 +61,9 @@ read_when:
     const result = runTsx(DOCS_LIST, [repoRoot]);
 
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /Memory/);
-    assert.match(result.stdout, /overview-memory\.md/);
-    assert.doesNotMatch(result.stdout, /old-memory-notes\.md/);
+    assert.match(result.stdout, /V3 \/ Memory/);
+    assert.match(result.stdout, /v3\/memory\/overview-memory\.md/);
+    assert.doesNotMatch(result.stdout, /v3\/archive\/memory\/old-memory-notes\.md/);
     assert.match(result.stdout, /archive 文档默认隐藏/);
   });
 });
@@ -71,7 +71,7 @@ read_when:
 test("docs-lint 支持按文件校验并要求 read_when", () => {
   withTempRepo((repoRoot) => {
     writeFile(
-      join(repoRoot, "docs", "arch", "good.md"),
+      join(repoRoot, "docs", "v2", "arch", "good.md"),
       `---
 summary: 架构总览
 read_when:
@@ -83,7 +83,7 @@ read_when:
     );
 
     writeFile(
-      join(repoRoot, "docs", "security", "bad.md"),
+      join(repoRoot, "docs", "v2", "security", "bad.md"),
       `---
 summary: 安全约束
 ---
@@ -92,12 +92,12 @@ summary: 安全约束
 `
     );
 
-    const result = runTsx(DOCS_LINT, [repoRoot, "--files", "docs/security/bad.md"]);
+    const result = runTsx(DOCS_LINT, [repoRoot, "--files", "docs/v2/security/bad.md"]);
 
     assert.notEqual(result.status, 0, "lint 应该失败");
-    assert.match(result.stdout + result.stderr, /security\/bad\.md/);
+    assert.match(result.stdout + result.stderr, /v2\/security\/bad\.md/);
     assert.match(result.stdout + result.stderr, /missing read_when/i);
-    assert.doesNotMatch(result.stdout + result.stderr, /arch\/good\.md/);
+    assert.doesNotMatch(result.stdout + result.stderr, /v2\/arch\/good\.md/);
   });
 });
 
@@ -122,9 +122,31 @@ read_when:
   });
 });
 
+test("docs-lint 拒绝旧的 docs domain 直放结构", () => {
+  withTempRepo((repoRoot) => {
+    writeFile(
+      join(repoRoot, "docs", "memory", "legacy.md"),
+      `---
+summary: 旧结构
+read_when:
+  - 只用于验证旧结构报错
+---
+
+# 旧结构
+`
+    );
+
+    const result = runTsx(DOCS_LINT, [repoRoot]);
+
+    assert.notEqual(result.status, 0, "lint 应该失败");
+    assert.match(result.stdout + result.stderr, /目录不合法/);
+    assert.match(result.stdout + result.stderr, /docs\/v2\/memory/);
+  });
+});
+
 test("docs-migrate 为旧文档补齐 summary 和 read_when", () => {
   withTempRepo((repoRoot) => {
-    const targetPath = join(repoRoot, "docs", "debug", "code-reading-crash.md");
+    const targetPath = join(repoRoot, "docs", "v2", "debug", "crash.md");
     writeFile(
       targetPath,
       `# Crash 路径调研

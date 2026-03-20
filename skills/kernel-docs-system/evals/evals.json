@@ -18,6 +18,24 @@
       "prompt": "把一篇旧的调试分析 markdown 迁成新格式，正文保留，只补最小 front matter，然后告诉我 read_when 应该怎么写。",
       "expected_output": "应该优先使用 docs-migrate 补 front matter，保留正文，并补上 summary 和 read_when。解释 read_when 是给 AI 做文档入口筛选用的，而不是状态字段。",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "我当前打开的是 kernel-5.x/mm，先帮我列出 docs 里应该优先读哪些文档。",
+      "expected_output": "应该先把当前路径判定为 v2，只优先展示和选择 docs/v2/ 文档，不把 docs/v3/ 当成默认阅读面。",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "我现在在 RTOS_V3_master/hm-verif-kernel/kernel/base/mm，看文档时如果用户没特别提 Linux，就先别把 Linux 文档混进来。",
+      "expected_output": "应该把当前路径判定为 v3，默认优先选择 docs/v3/；只有用户明确要求参考 V2 或 Linux 时，才补读 docs/v2/。",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "这是 lite 线的需求，代码仓规则还没定，先按 lite 文档面给我列出入口，不够时再看看 V2。",
+      "expected_output": "应该把当前上下文按 lite 处理，先优先选择 docs/lite/，不够时再补读 docs/v2/，不要把 docs/v3/ 当成默认阅读面。",
+      "files": []
     }
   ]
 }

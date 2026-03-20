@@ -19,6 +19,10 @@ description: Use when working in repositories that treat kernel and system docs 
 ## Fixed Rules
 
 - 扫描范围固定为 `docs/**/*.md`
+- 版本目录固定为：
+  - `v2`
+  - `v3`
+  - `lite`
 - 领域目录固定为：
   - `arch`
   - `memory`
@@ -28,7 +32,7 @@ description: Use when working in repositories that treat kernel and system docs 
   - `security`
   - `drivers`
 - `archive` 文档默认隐藏，只有显式加 `--all` 才展示
-- 不使用 `plan` / `research` 深目录；代码调研文档直接放到对应领域目录
+- 不使用 `plan` / `research` 深目录；文档直接放到 `docs/<version>/<domain>/`
 - `process` 分类已经并入 `arch`
 
 ## Commands
@@ -57,14 +61,38 @@ read_when:
 
 ## Common Patterns
 
-- 架构、启动、调度、IPC、跨子系统机制：放 `docs/arch/`
-- 内存管理、页表、分配器、缺页异常：放 `docs/memory/`
-- VFS、具体文件系统实现、缓存一致性：放 `docs/filesystem/`
-- 日志、trace、观测、诊断链路：放 `docs/dfx/`
-- GDB、crash 分析、现场定位、调试手册：放 `docs/debug/`
-- 权限、隔离、认证、加固：放 `docs/security/`
-- 设备模型、总线、驱动框架、外设适配：放 `docs/drivers/`
-- 代码调研文档命名建议：`code-reading-*.md`
+- 架构、启动、调度、IPC、跨子系统机制：放 `docs/<version>/arch/`
+- 内存管理、页表、分配器、缺页异常：放 `docs/<version>/memory/`
+- VFS、具体文件系统实现、缓存一致性：放 `docs/<version>/filesystem/`
+- 日志、trace、观测、诊断链路：放 `docs/<version>/dfx/`
+- GDB、crash 分析、现场定位、调试手册：放 `docs/<version>/debug/`
+- 权限、隔离、认证、加固：放 `docs/<version>/security/`
+- 设备模型、总线、驱动框架、外设适配：放 `docs/<version>/drivers/`
+- 文件名直接使用主题名，版本由目录表达
+- `source` 是可选来源说明，不是必填路径
+
+## Version Routing
+
+根据当前打开路径、当前工作区路径或用户明确给出的路径判断默认版本：
+
+- 仓名以 `hm-` 开头：`v3`
+- 绝对路径包含 `RTOS_V3_master`：`v3`
+- 绝对路径包含 `RTOS_V2_master`：`v2`
+- 路径或仓名包含 `kernel-5.x`：`v2`
+- `lite` 路径规则暂未固定；当前只有用户明确说是 `lite` 时，才按 `lite` 处理
+
+选择文档时遵循非对称规则：
+
+- 当前路径命中 `v2`：只看 `docs/v2/`
+- 当前路径命中 `v3`：默认看 `docs/v3/`；只有用户明确要求看 `v2` / `Linux` 时，才额外看 `docs/v2/`
+- 当前上下文是 `lite`：先看 `docs/lite/`；不够时再补看 `docs/v2/`；不看 `docs/v3/`
+- 当前路径无法判断版本：根据用户提到的 `V2` / `Linux` / `V3` / `鸿蒙` / `lite` 选择版本文档
+
+`source` 的格式建议：
+
+- 参考文档：只写文档名
+- 参考代码：写 `git仓库名:仓内相对路径`
+- 不要求穷举所有参考文件，只写主要来源
 
 ## Common Mistakes
 

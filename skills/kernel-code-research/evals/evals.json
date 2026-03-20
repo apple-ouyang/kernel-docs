@@ -3,8 +3,8 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "先帮我读一下缺页异常处理链路，然后把代码调研结果整理成 docs/memory 下的一篇长期文档。",
-      "expected_output": "应该先检查 docs 入口，再把调研结果写入 docs/memory/code-reading-*.md，front matter 至少包含 summary 和 read_when。",
+      "prompt": "先帮我读一下缺页异常处理链路，然后把代码调研结果整理成 docs/<version>/memory 下的一篇长期文档。",
+      "expected_output": "应该先检查 docs 入口，并根据当前打开路径判断这是 v2、v3 还是 lite；输出文档使用 docs/<version>/memory/<topic>.md 命名，front matter 至少包含 summary 和 read_when。",
       "files": []
     },
     {
@@ -16,7 +16,19 @@
     {
       "id": 3,
       "prompt": "帮我梳理驱动框架初始化路径，重点记录关键结构、调用链和容易改坏的地方。",
-      "expected_output": "应该围绕模块边界、关键结构、调用链和风险点组织正文，并输出到 docs/drivers/ 下。",
+      "expected_output": "应该围绕模块边界、关键结构、调用链和风险点组织正文，并输出到 docs/<version>/drivers/<topic>.md。",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "我现在打开的是 /work/RTOS_V3_master/hm-verif-kernel/kernel/base/mm，帮我读代码并整理一篇长期文档；如果有必要可以顺带参考 Linux 那边的旧实现。",
+      "expected_output": "应该先把当前路径判定为 v3，默认优先看 docs/v3/；因为用户明确提到 Linux/旧实现，才允许额外参考 docs/v2/；输出文档应使用 docs/v3/<domain>/<topic>.md。",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "我现在在 kernel-5.x/mm 里读代码，帮我先看看现有文档，再沉淀一篇新的长期文档。",
+      "expected_output": "应该把当前路径判定为 v2，只看 docs/v2/，不要把 docs/v3/ 当成默认参考；新文档命名应使用 docs/v2/<domain>/<topic>.md。",
       "files": []
     }
   ]

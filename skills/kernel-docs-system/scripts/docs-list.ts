@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 
-import { DOC_DOMAIN_LABELS, DOC_DOMAINS, isArchived, loadDocuments } from "./lib.ts";
+import { DOC_DOMAIN_LABELS, DOC_DOMAINS, DOC_VERSION_LABELS, DOC_VERSIONS, isArchived, loadDocuments } from "./lib.ts";
 
 const args = process.argv.slice(2);
 const showAll = args.includes("--all");
@@ -11,22 +11,23 @@ const visibleDocs = showAll ? docs : docs.filter((doc) => !isArchived(doc));
 const hiddenArchiveCount = docs.length - visibleDocs.length;
 const groups = new Map<string, typeof visibleDocs>();
 
-for (const domain of DOC_DOMAINS) {
-  groups.set(DOC_DOMAIN_LABELS[domain], []);
+for (const version of DOC_VERSIONS) {
+  for (const domain of DOC_DOMAINS) {
+    groups.set(`${DOC_VERSION_LABELS[version]} / ${DOC_DOMAIN_LABELS[domain]}`, []);
+  }
 }
-groups.set("Archive", []);
 groups.set("Unknown", []);
 
 for (const doc of visibleDocs) {
-  if (doc.group === "archive") {
-    groups.get("Archive")!.push(doc);
-    continue;
-  }
   if (doc.group === "unknown") {
     groups.get("Unknown")!.push(doc);
     continue;
   }
-  groups.get(DOC_DOMAIN_LABELS[doc.group])!.push(doc);
+  if (!doc.version) {
+    groups.get("Unknown")!.push(doc);
+    continue;
+  }
+  groups.get(`${DOC_VERSION_LABELS[doc.version]} / ${DOC_DOMAIN_LABELS[doc.group]}`)!.push(doc);
 }
 
 console.log(`Docs root: ${docsRoot}`);

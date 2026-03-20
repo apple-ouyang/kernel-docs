@@ -13,8 +13,20 @@
   - `security`
   - `drivers`
 - `process` 已并入 `arch`，不要再新增 `process` 目录
-- 代码调研文档直接写到对应领域目录，文件名建议使用 `code-reading-*.md`
-- `archive` 文档默认不展示，路径使用 `docs/archive/<domain>/`
+- 文档路径固定为 `docs/<version>/<domain>/topic.md`
+  - `docs/v2/<domain>/`：V2，Linux 线
+  - `docs/v3/<domain>/`：V3，鸿蒙线
+  - `docs/lite/<domain>/`：Lite 线
+- 版本判定：
+  - 仓名以 `hm-` 开头，或路径包含 `RTOS_V3_master`：`v3`
+  - 路径包含 `RTOS_V2_master`，或路径 / 仓名包含 `kernel-5.x`：`v2`
+  - `lite` 路径规则暂未固定；只有用户明确说明是 `lite` 时，按 `lite` 处理
+- 阅读规则：
+  - 当前打开路径是 `v2`：只看 `docs/v2/`
+  - 当前打开路径是 `v3`：默认看 `docs/v3/`；只有用户明确要求 `v2` / `Linux` 时，才额外看 `docs/v2/`
+  - 当前上下文是 `lite`：先看 `docs/lite/`；不够时再补看 `docs/v2/`；不看 `docs/v3/`
+  - 路径无法判断版本：结合用户语义选择 `v2` / `v3` / `lite`
+- `archive` 文档默认不展示，路径使用 `docs/<version>/archive/<domain>/`
 - 不在这个仓里维护 plan / TODO 风格文档
 
 ## Front Matter
@@ -27,6 +39,13 @@
 `read_when` 必须写清楚：**AI 在什么场景下应该优先读这篇文档**。
 
 允许但不强制的字段可以自行补充，例如 `source`、`owner`、`updated_at`、`tags`。
+
+`source` 的语义是“这篇文档主要基于什么材料写成”，不是必填路径：
+
+- 临时、随手参考且无需追溯的材料，可以不写
+- 参考文档时，只记录文档名，不要求记录仓库或路径
+- 参考代码时，写 `git仓库名:仓内相对路径`
+- 不要求穷举所有参考文件；精确文件路径和行号放正文
 
 ## 默认流程
 

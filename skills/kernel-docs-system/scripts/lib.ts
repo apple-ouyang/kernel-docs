@@ -11,8 +11,11 @@ export const DOC_DOMAINS = [
   "drivers",
 ] as const;
 
+export const DOC_VERSIONS = ["v2", "v3", "lite"] as const;
+
 export type DocDomain = (typeof DOC_DOMAINS)[number];
-export type DocGroup = DocDomain | "archive" | "unknown";
+export type DocVersion = (typeof DOC_VERSIONS)[number];
+export type DocGroup = DocDomain | "unknown";
 
 export const DOC_DOMAIN_LABELS: Record<DocDomain, string> = {
   arch: "Arch",
@@ -22,6 +25,12 @@ export const DOC_DOMAIN_LABELS: Record<DocDomain, string> = {
   debug: "Debug",
   security: "Security",
   drivers: "Drivers",
+};
+
+export const DOC_VERSION_LABELS: Record<DocVersion, string> = {
+  v2: "V2",
+  v3: "V3",
+  lite: "Lite",
 };
 
 const DEFAULT_READ_WHEN: Record<DocDomain, string> = {
@@ -47,6 +56,8 @@ export interface DocRecord {
   relativePath: string;
   metadata: DocMetadata;
   group: DocGroup;
+  version: DocVersion | null;
+  archived: boolean;
   archivedDomain: DocDomain | null;
 }
 
@@ -92,12 +103,14 @@ export function loadDocuments(inputPath?: string, selectedFiles: string[] = []):
   const fullPaths = selectedFiles.length > 0 ? resolveSelectedFiles(docsRoot, selectedFiles) : walkMarkdownFiles(docsRoot);
   const docs = fullPaths.map((fullPath) => {
     const relativePath = relative(docsRoot, fullPath);
-    const { group, archivedDomain } = classifyPath(relativePath);
+    const { group, version, archived, archivedDomain } = classifyPath(relativePath);
     return {
       fullPath,
       relativePath,
       metadata: parseMarkdown(readFileSync(fullPath, "utf8")),
       group,
+      version,
+      archived,
       archivedDomain,
     };
   });
@@ -120,25 +133,29 @@ export function parseMarkdown(content: string): DocMetadata {
 }
 
 export function isArchived(record: DocRecord): boolean {
-  return record.group === "archive";
+  return record.archived;
 }
 
 export function validateDocLocation(relativePath: string): string | null {
   const normalized = normalizePath(relativePath);
   const segments = normalized.split("/").filter(Boolean);
-  if (segments.length < 2) {
-    return "文档必须放在已定义的领域目录下，例如 docs/memory/*.md";
+  if (segments.length < 3) {
+    return `目录不合法：${relativePath}。文档必须放在已定义的版本与领域目录下，例如 docs/v2/memory/*.md`;
   }
 
-  const [first, second] = segments;
-  if (isDocDomain(first)) {
+  const [first, second, third] = segments;
+  if (!isDocVersion(first)) {
+    return `目录不合法：${relativePath}。允许的顶层目录是 ${DOC_VERSIONS.join(", ")}，归档使用 <version>/archive/<domain>/`;
+  }
+
+  if (isDocDomain(second)) {
     return null;
   }
-  if (first === "archive" && second && isDocDomain(second)) {
+  if (second === "archive" && third && isDocDomain(third)) {
     return null;
   }
 
-  return `目录不合法：${relativePath}。允许的顶层目录是 ${DOC_DOMAINS.join(", ")}，归档使用 archive/<domain>/`;
+  return `目录不合法：${relativePath}。允许的顶层目录是 ${DOC_VERSIONS.join(", ")}，归档使用 <version>/archive/<domain>/`;
 }
 
 export function buildFrontMatter(relativePath: string, content: string): string {
@@ -149,7 +166,7 @@ export function buildFrontMatter(relativePath: string, content: string): string 
 
   const title = parsed.title ?? basename(relativePath, extname(relativePath));
   const { group, archivedDomain } = classifyPath(relativePath);
-  const domain = group === "archive" ? archivedDomain : group;
+  const domain = group === "unknown" ? archivedDomain : group;
   const readWhen = domain && domain !== "unknown" ? DEFAULT_READ_WHEN[domain] : "AI 需要判断这篇文档是否与当前任务相关时";
 
   const frontMatter = [
@@ -191,21 +208,49 @@ function resolveSelectedFiles(docsRoot: string, selectedFiles: string[]): string
   return [...results].sort((a, b) => a.localeCompare(b));
 }
 
-function classifyPath(relativePath: string): { group: DocGroup; archivedDomain: DocDomain | null } {
+function classifyPath(relativePath: string): {
+  group: DocGroup;
+  version: DocVersion | null;
+  archived: boolean;
+  archivedDomain: DocDomain | null;
+} {
   const normalized = normalizePath(relativePath);
   const segments = normalized.split("/").filter(Boolean);
-  const [first, second] = segments;
+  const [first, second, third] = segments;
 
-  if (first === "archive") {
+  if (!first || !isDocVersion(first)) {
     return {
-      group: "archive",
-      archivedDomain: second && isDocDomain(second) ? second : null,
+      group: "unknown",
+      version: null,
+      archived: false,
+      archivedDomain: null,
     };
   }
-  if (first && isDocDomain(first)) {
-    return { group: first, archivedDomain: null };
+
+  if (second === "archive") {
+    return {
+      group: third && isDocDomain(third) ? third : "unknown",
+      version: first,
+      archived: true,
+      archivedDomain: third && isDocDomain(third) ? third : null,
+    };
   }
-  return { group: "unknown", archivedDomain: null };
+
+  if (second && isDocDomain(second)) {
+    return {
+      group: second,
+      version: first,
+      archived: false,
+      archivedDomain: null,
+    };
+  }
+
+  return {
+    group: "unknown",
+    version: first,
+    archived: false,
+    archivedDomain: null,
+  };
 }
 
 function readScalar(frontMatter: string, key: string): string | null {
@@ -271,6 +316,10 @@ function normalizePath(filePath: string): string {
 
 function isDocDomain(value: string): value is DocDomain {
   return DOC_DOMAINS.includes(value as DocDomain);
+}
+
+function isDocVersion(value: string): value is DocVersion {
+  return DOC_VERSIONS.includes(value as DocVersion);
 }
 
 function stripQuotes(value: string): string {
