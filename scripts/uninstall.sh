@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 bash "$ROOT_DIR/scripts/uninstall-pre-commit.sh"
-npx -y skills remove -g -a claude-code kernel-docs-system kernel-code-research -y
+npx -y skills remove kernel-docs-system kernel-code-research -g -a claude-code -y
 bash "$ROOT_DIR/scripts/uninstall-global-bin.sh"
 node "$ROOT_DIR/scripts/remove-global-claude-block.mjs"
 
