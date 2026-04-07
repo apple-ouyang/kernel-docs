@@ -7,7 +7,7 @@ description: Use when working in repositories that treat kernel and system docs 
 
 ## Overview
 
-把 `docs/` 当成一等公民来维护。先列出文档入口，再根据 `summary` 和 `read_when` 决定读哪些文档；写文档前先校验元数据，旧文档再按统一格式迁移。
+把 `docs/` 当成一等公民来维护。先列出文档入口，再根据 `summary` 和 `read_when` 决定读哪些文档；写文档前先校验元数据，旧文档再按统一格式迁移。重点不是“补一个 YAML 头”，而是让 `summary` 和 `read_when` 真正承担入口路由：回答这篇文档帮助做什么判断、什么场景该先读它。
 
 ## When To Use
 
@@ -32,8 +32,17 @@ description: Use when working in repositories that treat kernel and system docs 
   - `security`
   - `drivers`
 - `archive` 文档默认隐藏，只有显式加 `--all` 才展示
+- `archive` 是生命周期，不是版本维度；归档路径固定为 `docs/archive/<domain>/`
 - 不使用 `plan` / `research` 深目录；文档直接放到 `docs/<version>/<domain>/`
 - `process` 分类已经并入 `arch`
+- 任何“文档入口发现”必须先走 `docs-list`；不要用 `rg`、`grep`、`find` 直接扫描 `docs/` 来决定先读哪些文档
+- `rg` / `grep` 只允许在 `docs-list` 已锁定候选文档后，用于正文内的定点检索；不要跳过入口路由直接全文扫
+- 归档前先判断是否需要知识上浮：当前仍然有效的架构规则、命令入口、调试流程、数据约束，不能只留在 `archive`
+- `docs-migrate.ts` 只负责补最小 front matter 外壳，不负责完整语义迁移
+- 大批量旧文档迁移默认拆成不重叠的小批次处理，不要在单个上下文里硬吃几十篇文档
+- `summary` 必须优先回答“这篇文档帮助做什么决策 / 操作”，不要只是改写标题
+- `read_when` 必须写成任务触发语句，最好接近用户会说的话，不要写成空泛短语
+- `docs-list` 只保留入口路由信息：分组、路径、`summary`、`read_when`、archive 轻提示；不要把正文预览或完整 front matter 混进首屏
 
 ## Commands
 
@@ -47,9 +56,9 @@ description: Use when working in repositories that treat kernel and system docs 
 
 ```yaml
 ---
-summary: 一句话说明这篇文档的用途
+summary: 一句话说明这篇文档帮助完成什么判断或操作
 read_when:
-  - AI 需要判断这篇文档是否与当前任务相关时
+  - 遇到什么任务、决策或排障场景时先读
 ---
 ```
 
@@ -58,6 +67,17 @@ read_when:
 - **AI 在什么场景下应该优先读这篇文档**
 - 这段文本会和所有文档的 `summary` 一起聚合，供 AI 先做入口筛选
 - 所以应该写成“任务涉及什么 / 判断什么前 / 修改什么前”，而不是空泛的备注
+
+推荐写法：
+
+- `summary`：优先写“作用 + 决策对象”，例如“定义缺页异常排查时先看哪些现场与寄存器”
+- `read_when`：优先写成任务触发语句，例如“排查 slab 分配异常前”“判断这个问题属于 VFS 还是具体文件系统实现时”
+
+避免写法：
+
+- `summary` 只重复标题
+- `read_when` 只写“修改前”“需要时”“排查时”
+- `read_when` 留 `TODO`
 
 ## Common Patterns
 
@@ -70,6 +90,7 @@ read_when:
 - 设备模型、总线、驱动框架、外设适配：放 `docs/<version>/drivers/`
 - 文件名直接使用主题名，版本由目录表达
 - `source` 是可选来源说明，不是必填路径
+- 归档文档放 `docs/archive/<domain>/`，不要再带版本目录
 
 ## Version Routing
 
@@ -87,6 +108,7 @@ read_when:
 - 当前路径命中 `v3`：默认看 `docs/v3/`；只有用户明确要求看 `v2` / `Linux` 时，才额外看 `docs/v2/`
 - 当前上下文是 `lite`：先看 `docs/lite/`；不够时再补看 `docs/v2/`；不看 `docs/v3/`
 - 当前路径无法判断版本：根据用户提到的 `V2` / `Linux` / `V3` / `鸿蒙` / `lite` 选择版本文档
+- 需要追历史实现或废弃方案时，再额外看 `docs/archive/`
 
 `source` 的格式建议：
 
@@ -97,6 +119,8 @@ read_when:
 ## Common Mistakes
 
 - 只看 `docs/` 根目录，不扫子目录
+- 把 `archive` 当成版本目录的一部分，而不是统一生命周期目录
+- 归档前不做知识上浮，导致当前仍有效的信息只留在历史文档里
 - 把 `read_when` 写成“待补充”“这篇先不看”这类无筛选价值的句子
 - 重新发明 `process` 目录，而不是放回 `arch`
 - 把代码调研又塞回 `docs/research/`

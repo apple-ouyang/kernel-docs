@@ -26,7 +26,7 @@
   - 当前打开路径是 `v3`：默认看 `docs/v3/`；只有用户明确要求 `v2` / `Linux` 时，才额外看 `docs/v2/`
   - 当前上下文是 `lite`：先看 `docs/lite/`；不够时再补看 `docs/v2/`；不看 `docs/v3/`
   - 路径无法判断版本：结合用户语义选择 `v2` / `v3` / `lite`
-- `archive` 文档默认不展示，路径使用 `docs/<version>/archive/<domain>/`
+- `archive` 文档默认不展示，路径使用 `docs/archive/<domain>/`
 - 不在这个仓里维护 plan / TODO 风格文档
 
 ## Front Matter

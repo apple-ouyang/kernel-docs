@@ -139,23 +139,24 @@ export function isArchived(record: DocRecord): boolean {
 export function validateDocLocation(relativePath: string): string | null {
   const normalized = normalizePath(relativePath);
   const segments = normalized.split("/").filter(Boolean);
-  if (segments.length < 3) {
+  if (segments.length < 2) {
     return `目录不合法：${relativePath}。文档必须放在已定义的版本与领域目录下，例如 docs/v2/memory/*.md`;
   }
 
-  const [first, second, third] = segments;
+  const [first, second] = segments;
+  if (first === "archive" && second && isDocDomain(second)) {
+    return null;
+  }
+
   if (!isDocVersion(first)) {
-    return `目录不合法：${relativePath}。允许的顶层目录是 ${DOC_VERSIONS.join(", ")}，归档使用 <version>/archive/<domain>/`;
+    return `目录不合法：${relativePath}。允许的顶层目录是 ${DOC_VERSIONS.join(", ")}，归档使用 archive/<domain>/`;
   }
 
   if (isDocDomain(second)) {
     return null;
   }
-  if (second === "archive" && third && isDocDomain(third)) {
-    return null;
-  }
 
-  return `目录不合法：${relativePath}。允许的顶层目录是 ${DOC_VERSIONS.join(", ")}，归档使用 <version>/archive/<domain>/`;
+  return `目录不合法：${relativePath}。允许的顶层目录是 ${DOC_VERSIONS.join(", ")}，归档使用 archive/<domain>/`;
 }
 
 export function buildFrontMatter(relativePath: string, content: string): string {
@@ -216,7 +217,16 @@ function classifyPath(relativePath: string): {
 } {
   const normalized = normalizePath(relativePath);
   const segments = normalized.split("/").filter(Boolean);
-  const [first, second, third] = segments;
+  const [first, second] = segments;
+
+  if (first === "archive") {
+    return {
+      group: second && isDocDomain(second) ? second : "unknown",
+      version: null,
+      archived: true,
+      archivedDomain: second && isDocDomain(second) ? second : null,
+    };
+  }
 
   if (!first || !isDocVersion(first)) {
     return {
@@ -224,15 +234,6 @@ function classifyPath(relativePath: string): {
       version: null,
       archived: false,
       archivedDomain: null,
-    };
-  }
-
-  if (second === "archive") {
-    return {
-      group: third && isDocDomain(third) ? third : "unknown",
-      version: first,
-      archived: true,
-      archivedDomain: third && isDocDomain(third) ? third : null,
     };
   }
 

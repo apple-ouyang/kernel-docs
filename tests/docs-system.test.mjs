@@ -47,7 +47,7 @@ read_when:
     );
 
     writeFile(
-      join(repoRoot, "docs", "v3", "archive", "memory", "old-memory-notes.md"),
+      join(repoRoot, "docs", "archive", "memory", "old-memory-notes.md"),
       `---
 summary: 旧版内存笔记
 read_when:
@@ -140,7 +140,28 @@ read_when:
 
     assert.notEqual(result.status, 0, "lint 应该失败");
     assert.match(result.stdout + result.stderr, /目录不合法/);
-    assert.match(result.stdout + result.stderr, /docs\/v2\/memory/);
+    assert.match(result.stdout + result.stderr, /archive\/<domain>/);
+  });
+});
+
+test("docs-lint 接受统一 archive 路径", () => {
+  withTempRepo((repoRoot) => {
+    writeFile(
+      join(repoRoot, "docs", "archive", "debug", "legacy-crash.md"),
+      `---
+summary: 历史 crash 处理笔记
+read_when:
+  - 需要追溯旧版 crash 处理路径时
+---
+
+# 历史 crash 处理笔记
+`
+    );
+
+    const result = runTsx(DOCS_LINT, [repoRoot]);
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout + result.stderr, /校验通过/);
   });
 });
 

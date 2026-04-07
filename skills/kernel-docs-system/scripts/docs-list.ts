@@ -17,8 +17,18 @@ for (const version of DOC_VERSIONS) {
   }
 }
 groups.set("Unknown", []);
+groups.set("Archive", []);
 
 for (const doc of visibleDocs) {
+  if (doc.archived) {
+    if (doc.group === "unknown") {
+      groups.get("Archive")!.push(doc);
+      continue;
+    }
+    groups.get("Archive")!.push(doc);
+    continue;
+  }
+
   if (doc.group === "unknown") {
     groups.get("Unknown")!.push(doc);
     continue;
@@ -44,7 +54,12 @@ for (const [label, records] of groups) {
     console.log(`- ${record.relativePath}`);
     console.log(`  Summary: ${summary}`);
     if (record.metadata.readWhen.length > 0) {
-      console.log(`  Read when: ${record.metadata.readWhen.join("; ")}`);
+      console.log("  Read when:");
+      for (const item of record.metadata.readWhen) {
+        console.log(`    - ${item}`);
+      }
+    } else {
+      console.log("  Read when: 缺少 read_when");
     }
   }
   console.log("");

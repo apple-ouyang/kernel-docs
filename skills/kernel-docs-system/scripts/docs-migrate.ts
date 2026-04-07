@@ -26,7 +26,8 @@ if (!write) {
     console.log(`- ${doc.relativePath}`);
   }
   console.log("");
-  console.log("加上 --write 后会为这些文档补齐基础模板。");
+  console.log("加上 --write 后会为这些文档补齐最小 front matter 外壳。");
+  console.log("注意：summary / read_when 仍应由 AI 继续复核和完善。");
   process.exit(0);
 }
 
