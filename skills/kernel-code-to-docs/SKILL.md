@@ -6,12 +6,14 @@ description: Use when reading kernel, OS, or low-level system code and turning t
 # Kernel Code To Docs
 
 把“读代码”沉淀成长期文档，不输出临时聊天结论、计划文档或 TODO 清单。
+长期文档仓固定入口是 `~/kernel-docs`；如果实际仓库不在这个目录，安装脚本会维护同名软链接。
+长期文档默认只写入 `~/kernel-docs/docs/<version>/<domain>/topic.md`，不要把长期文档写回当前代码仓的 `docs/`。
 
 ## When To Use
 
 - 用户要你先读内核/系统代码，再整理成长期文档
 - 目标是沉淀模块边界、调用链、约束和风险点
-- 输出要进入 `docs/<version>/<domain>/`
+- 输出要进入 `~/kernel-docs/docs/<version>/<domain>/`
 
 ## Execution Skeleton
 
@@ -30,7 +32,7 @@ description: Use when reading kernel, OS, or low-level system code and turning t
 - 结论先讲清楚，再补证据路径
 - 如果已有同主题文档，优先更新原文，而不是新建重复文档
 - 不确定点写进风险点，不要转成 TODO 清单
-- 文档路径固定为 `docs/<version>/<domain>/topic.md`
+- 文档路径固定为 `~/kernel-docs/docs/<version>/<domain>/topic.md`
 - `process` 不单独建类，进程、线程、调度、启动、IPC 默认归 `arch`
 
 ## Version And Domain Rules

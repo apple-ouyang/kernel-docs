@@ -15,6 +15,9 @@
 
 ## 文档规则
 
+长期文档仓固定入口是 `~/kernel-docs`；如果实际仓库不在这个目录，安装脚本会维护同名软链接。
+长期文档默认只写入 `~/kernel-docs/docs/<version>/<domain>/topic.md`，不要把长期文档写回当前代码仓的 `docs/`。
+
 - 文档固定按领域目录分类：
   - `arch`
   - `memory`
@@ -24,7 +27,7 @@
   - `security`
   - `drivers`
 - `process` 已并入 `arch`，不要再新增 `process` 目录
-- 文档路径固定为 `docs/<version>/<domain>/topic.md`
+- 文档路径固定为 `~/kernel-docs/docs/<version>/<domain>/topic.md`
   - `docs/v2/<domain>/`：V2，Linux 线
   - `docs/v3/<domain>/`：V3，鸿蒙线
   - `docs/lite/<domain>/`：Lite 线
@@ -60,9 +63,9 @@
 
 ## 默认流程
 
-1. 编写或修改文档前，先运行 `~/.claude/bin/docs-list /path/to/target-repo`
-2. 提交前运行 `~/.claude/bin/docs-lint /path/to/target-repo`
-3. 旧文档补格式时运行 `~/.claude/bin/docs-migrate /path/to/target-repo --write`
+1. 编写或修改文档前，先运行 `~/.claude/bin/docs-list ~/kernel-docs`
+2. 提交前运行 `~/.claude/bin/docs-lint ~/kernel-docs`
+3. 旧文档补格式时运行 `~/.claude/bin/docs-migrate ~/kernel-docs --write`
 4. 本地提交默认依赖 `.githooks/pre-commit`
 5. docs-only 任务默认走 `kernel-docs-system`
 6. 代码调研沉淀任务默认走 `kernel-code-to-docs`

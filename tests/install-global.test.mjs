@@ -105,7 +105,9 @@ test("sync-global-claude 在文档系统小节后插入受管区块", () => {
 
     const content = readFileSync(join(claudeDir, "CLAUDE.md"), "utf8");
     assert.match(content, /<!-- kernel-docs:managed:start -->/);
+    assert.match(content, /长期文档仓固定入口是 `~\/kernel-docs`/);
     assert.match(content, /必须使用 `~\/\.claude\/bin\/docs-list` 命令列出当前有哪些文档可以参考/);
+    assert.match(content, /长期文档默认写入 `~\/kernel-docs\/docs\/<version>\/<domain>\/topic\.md`/);
     assert.match(content, /当前 kernel-docs 安装源：`\/tmp\/kernel-docs-a`/);
   });
 });

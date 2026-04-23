@@ -10,14 +10,17 @@
 ./scripts/install.sh
 ```
 
+推荐直接把仓库放在 `~/kernel-docs`。
+如果实际 clone 到别的位置，安装脚本会自动在用户目录下创建或更新 `~/kernel-docs` 软链接，后续 README、Skill 和全局提示词都统一以这个固定入口为准。
+
 常用命令：
 
 ```bash
-~/.claude/bin/docs-list /path/to/target-repo
-~/.claude/bin/docs-list /path/to/target-repo --version v3 --domain memory
-~/.claude/bin/docs-list /path/to/target-repo --json
-~/.claude/bin/docs-lint /path/to/target-repo
-~/.claude/bin/docs-migrate /path/to/target-repo --write
+~/.claude/bin/docs-list ~/kernel-docs
+~/.claude/bin/docs-list ~/kernel-docs --version v3 --domain memory
+~/.claude/bin/docs-list ~/kernel-docs --json
+~/.claude/bin/docs-lint ~/kernel-docs
+~/.claude/bin/docs-migrate ~/kernel-docs --write
 node --test tests/*.test.mjs
 ```
 
@@ -29,7 +32,7 @@ node --test tests/*.test.mjs
 - `node --test tests/*.test.mjs`: 验证安装脚本、文档脚本和元数据规则没有回归
 
 如果系统里没有 `tsx`，脚本会自动先尝试 `npm install -g tsx`，失败后再回退到 `~/.claude/tools/tsx` 里的用户目录安装；两种方式都失败时，才提示手工安装。
-文档操作的推荐入口固定是 `~/.claude/bin/docs-*`，这样即使你当前人在别的代码仓里，也能直接指定目标仓路径。
+文档操作的推荐入口固定是 `~/.claude/bin/docs-*`，长期文档仓的固定路径是 `~/kernel-docs`。这样即使你当前人在别的代码仓里，也不会把文档误写回代码仓。
 
 ## 安装内容
 
@@ -44,6 +47,7 @@ node --test tests/*.test.mjs
 - 全局命令：安装 `~/.claude/bin/docs-list`、`docs-lint`、`docs-migrate`
 - 全局提示词：把受管的 Docs 规则写入 `~/.claude/CLAUDE.md`
 - 全局环境文件：写入 `~/.claude/kernel-docs.env`，让全局命令知道当前 `kernel-docs` 仓的位置
+- 稳定仓入口：如果当前仓不在 `~/kernel-docs`，就创建或更新这个软链接，供 README、Skill 和提示词统一引用
 
 ## 目录规则
 
@@ -125,7 +129,7 @@ source:
 - `kernel-code-to-docs`: 负责先判定落点、再读代码、最后沉淀成长期文档，并明确更新旧文还是新建
 
 安装脚本会在运行时目录已存在时，直接把这两个 Skill 复制覆盖到对应目录；不存在就跳过，不会强行创建新的 host 运行时目录。
-它也会安装 `~/.claude/bin/docs-list`、`docs-lint`、`docs-migrate`，并同步全局 `~/.claude/CLAUDE.md` 里的 Docs 提示词。项目级维护规则直接写在仓内 `CLAUDE.md`，并由 `AGENTS.md` 软链接过去。
+它也会安装 `~/.claude/bin/docs-list`、`docs-lint`、`docs-migrate`，同步全局 `~/.claude/CLAUDE.md` 里的 Docs 提示词，并确保长期文档仓固定入口可见为 `~/kernel-docs`。项目级维护规则直接写在仓内 `CLAUDE.md`，并由 `AGENTS.md` 软链接过去。
 
 ## 卸载
 
@@ -141,5 +145,6 @@ source:
 - 清掉全局 `~/.claude/CLAUDE.md` 里的受管 Docs 区块
 - 撤销本仓 `core.hooksPath=.githooks`
 - 卸载复制到运行时目录的两个 Skill
+- 如果 `~/kernel-docs` 是安装脚本为当前仓创建的软链接，一并移除
 
 它不会删除共享的 `tsx` 运行时。

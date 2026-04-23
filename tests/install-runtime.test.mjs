@@ -145,9 +145,9 @@ exit 92
 
     assert.equal(result.status, 0, result.stderr);
     assert.equal(existsSync(join(homeDir, ".claude", "tools", "tsx", "bin", "tsx")), true);
-    assert.match(result.stdout, /~\/\.claude\/bin\/docs-list \/path\/to\/target-repo/);
-    assert.match(result.stdout, /~\/\.claude\/bin\/docs-lint \/path\/to\/target-repo/);
-    assert.match(result.stdout, /~\/\.claude\/bin\/docs-migrate \/path\/to\/target-repo --write/);
+    assert.match(result.stdout, /~\/\.claude\/bin\/docs-list ~\/kernel-docs/);
+    assert.match(result.stdout, /~\/\.claude\/bin\/docs-lint ~\/kernel-docs/);
+    assert.match(result.stdout, /~\/\.claude\/bin\/docs-migrate ~\/kernel-docs --write/);
     assert.doesNotMatch(result.stdout, /npm run docs:/);
 
     const npmLog = readFileSync(npmLogPath, "utf8");
@@ -237,6 +237,8 @@ test("install.sh 仅在运行时目录存在时覆盖复制两个 skill", () => 
     });
 
     assert.equal(result.status, 0, result.stderr);
+    assert.equal(lstatSync(join(homeDir, "kernel-docs")).isSymbolicLink(), true);
+    assert.equal(readlinkSync(join(homeDir, "kernel-docs")), REPO_ROOT);
 
     assert.equal(existsSync(join(homeDir, ".claude", "skills", "kernel-docs-system", "SKILL.md")), true);
     assert.equal(existsSync(join(homeDir, ".claude", "skills", "kernel-code-to-docs", "SKILL.md")), true);
@@ -245,6 +247,27 @@ test("install.sh 仅在运行时目录存在时覆盖复制两个 skill", () => 
     assert.equal(existsSync(join(homeDir, ".opencode", "skills", "kernel-docs-system", "SKILL.md")), true);
     assert.equal(existsSync(join(homeDir, ".opencode", "skills", "kernel-code-to-docs", "SKILL.md")), true);
     assert.equal(readFileSync(join(homeDir, ".claude", "skills", "kernel-docs-system", "stale.txt"), "utf8"), "stale");
+  });
+});
+
+test("install.sh 在稳定入口已存在普通目录时跳过软链接创建", () => {
+  withTempHome((homeDir) => {
+    mkdirSync(join(homeDir, "kernel-docs"), { recursive: true });
+
+    const binDir = createFakeBin(homeDir, {
+      includeTsx: true,
+    });
+
+    const result = run("bash", [INSTALL_SH], {
+      env: {
+        HOME: homeDir,
+        PATH: scopedPath(binDir),
+      },
+    });
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(lstatSync(join(homeDir, "kernel-docs")).isDirectory(), true);
+    assert.match(result.stderr, /已存在且不指向当前仓库，跳过稳定入口创建/);
   });
 });
 
@@ -322,6 +345,7 @@ test("uninstall.sh 清理复制到运行时目录的 skill 并移除全局安装
     mkdirSync(join(homeDir, ".agents", "skills", "kernel-code-to-docs"), { recursive: true });
     mkdirSync(join(homeDir, ".opencode", "skills", "kernel-docs-system"), { recursive: true });
     mkdirSync(join(homeDir, ".opencode", "skills", "kernel-code-to-docs"), { recursive: true });
+    symlinkSync(REPO_ROOT, join(homeDir, "kernel-docs"));
     writeFileSync(join(claudeDir, "kernel-docs.env"), 'KERNEL_DOCS_REPO="/tmp/kernel-docs"\n', "utf8");
     writeFileSync(join(claudeDir, "bin", "docs-list"), "#!/usr/bin/env bash\n", "utf8");
     writeFileSync(join(claudeDir, "bin", "docs-lint"), "#!/usr/bin/env bash\n", "utf8");
@@ -378,6 +402,7 @@ exit 97
     assert.equal(existsSync(join(homeDir, ".agents", "skills", "kernel-code-to-docs")), false);
     assert.equal(existsSync(join(homeDir, ".opencode", "skills", "kernel-docs-system")), false);
     assert.equal(existsSync(join(homeDir, ".opencode", "skills", "kernel-code-to-docs")), false);
+    assert.equal(existsSync(join(homeDir, "kernel-docs")), false);
     assert.equal(existsSync(join(claudeDir, "kernel-docs.env")), false);
     assert.equal(existsSync(join(claudeDir, "bin", "docs-list")), false);
     assert.equal(existsSync(join(claudeDir, "bin", "docs-lint")), false);

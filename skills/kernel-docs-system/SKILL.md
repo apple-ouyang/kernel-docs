@@ -6,6 +6,8 @@ description: Use when you need to treat `docs/**/*.md` as a routed docs system f
 # Docs System
 
 维护 `docs/` 入口系统，而不是把 markdown 当散文件处理。
+长期文档仓固定入口是 `~/kernel-docs`；如果实际仓库不在这个目录，安装脚本会维护同名软链接。
+长期文档默认只写入 `~/kernel-docs/docs/<version>/<domain>/topic.md`，不要把长期文档写回当前代码仓的 `docs/`。
 
 ## When To Use
 
@@ -37,7 +39,7 @@ description: Use when you need to treat `docs/**/*.md` as a routed docs system f
 - 不要用 `rg`、`grep`、`find` 直接扫描 `docs/` 决定先读哪篇
 - `archive` 默认隐藏；只有显式 `--all` 才展示
 - `archive` 是生命周期，不是版本维度；归档路径固定为 `docs/archive/<domain>/`
-- 文档路径固定为 `docs/<version>/<domain>/topic.md`
+- 文档路径固定为 `~/kernel-docs/docs/<version>/<domain>/topic.md`
 - 不使用 `plan` / `research` 深目录
 - `process` 已并入 `arch`
 - `docs-migrate` 只补外壳，不做完整语义迁移
@@ -126,9 +128,9 @@ read_when:
 
 ## Commands
 
-- `~/.claude/bin/docs-list [repo-root] [--all] [--version <v2|v3|lite>] [--domain <domain>] [--json]`
-- `~/.claude/bin/docs-lint [repo-root] [--files <path...>]`
-- `~/.claude/bin/docs-migrate [repo-root] [--files <path...>] --write`
+- `~/.claude/bin/docs-list ~/kernel-docs [--all] [--version <v2|v3|lite>] [--domain <domain>] [--json]`
+- `~/.claude/bin/docs-lint ~/kernel-docs [--files <path...>]`
+- `~/.claude/bin/docs-migrate ~/kernel-docs [--files <path...>] --write`
 
 ## Output Contract
 
