@@ -1,4 +1,0 @@
-interface:
-  display_name: "Kernel Docs System"
-  short_description: "Route, lint, and migrate kernel docs entrypoints"
-  default_prompt: "Use $kernel-docs-system to list docs entrypoints, lint docs metadata, migrate a legacy doc, or decide the correct version/domain landing path."

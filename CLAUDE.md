@@ -2,6 +2,17 @@
 
 这是一个内核与系统设计文档仓，默认只关心 `docs/**/*.md`。
 
+## Skill 维护约束
+
+- 仓内保留两个独立 Skill：
+  - `kernel-docs-system`
+  - `kernel-code-to-docs`
+- 每个 Skill 的规则必须完整维护在各自目录下的单个 `SKILL.md`
+- 不要把 Skill 说明再拆到 `references/`、`agents/interface.yaml`、独立 eval 文档里
+- `kernel-docs-system` 负责文档入口发现、元数据校验、旧文档迁移和版本/领域落点判断
+- `kernel-code-to-docs` 负责读代码后沉淀长期文档
+- 项目级 `CLAUDE.md` 只保留仓库约束和维护规则，不内联 Skill 正文
+
 ## 文档规则
 
 - 文档固定按领域目录分类：
@@ -53,4 +64,5 @@
 2. 提交前运行 `~/.claude/bin/docs-lint /path/to/target-repo`
 3. 旧文档补格式时运行 `~/.claude/bin/docs-migrate /path/to/target-repo --write`
 4. 本地提交默认依赖 `.githooks/pre-commit`
-5. 仓内文档入口相关能力默认由 `kernel-docs-system` Skill 提供
+5. docs-only 任务默认走 `kernel-docs-system`
+6. 代码调研沉淀任务默认走 `kernel-code-to-docs`

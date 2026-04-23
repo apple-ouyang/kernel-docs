@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-for cmd in node npm npx git; do
+for cmd in node npm git; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
     echo "缺少命令：$cmd"
     exit 1
@@ -11,11 +11,6 @@ for cmd in node npm npx git; do
 done
 
 if ! "$ROOT_DIR/scripts/ensure-tsx.sh" >/dev/null; then
-  exit 1
-fi
-
-if ! npx -y skills --help >/dev/null 2>&1; then
-  echo "无法调用 npx skills，请先确认 skills CLI 可用"
   exit 1
 fi
 

@@ -2,24 +2,28 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OPENCODE_SKILLS_DIR="${HOME}/.opencode/skills"
+SKILL_NAMES=("kernel-docs-system" "kernel-code-to-docs")
 
 bash "$ROOT_DIR/scripts/docs-bootstrap.sh"
 bash "$ROOT_DIR/scripts/install-pre-commit.sh"
 
-if ! npx -y skills --help >/dev/null 2>&1; then
-  echo "无法调用 npx skills，请先确认 skills CLI 可用"
-  exit 1
-fi
+install_skill_if_dir_exists() {
+  local target_root="$1"
+  if [ ! -d "$target_root" ]; then
+    return 0
+  fi
 
-npx -y skills add "$ROOT_DIR" --full-depth -g -a claude-code -s kernel-docs-system kernel-code-to-docs -y
-npx -y skills add "$ROOT_DIR" --full-depth -g -a opencode -s kernel-docs-system kernel-code-to-docs -y
+  local skill_name
+  for skill_name in "${SKILL_NAMES[@]}"; do
+    local target_dir="${target_root}/${skill_name}"
+    mkdir -p "$target_dir"
+    cp -R "$ROOT_DIR/skills/${skill_name}/." "$target_dir/"
+  done
+}
 
-if [ -d "$OPENCODE_SKILLS_DIR" ]; then
-  # OpenCode 运行时目录已存在时，再补一份物理拷贝，避免 host 安装状态不同步。
-  cp -R "$ROOT_DIR/skills/kernel-docs-system" "$OPENCODE_SKILLS_DIR/"
-  cp -R "$ROOT_DIR/skills/kernel-code-to-docs" "$OPENCODE_SKILLS_DIR/"
-fi
+install_skill_if_dir_exists "${HOME}/.claude/skills"
+install_skill_if_dir_exists "${HOME}/.agents/skills"
+install_skill_if_dir_exists "${HOME}/.opencode/skills"
 
 bash "$ROOT_DIR/scripts/install-global-bin.sh"
 bash "$ROOT_DIR/scripts/run-tsx.sh" "$ROOT_DIR/scripts/sync-global-claude.ts"

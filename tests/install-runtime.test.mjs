@@ -3,8 +3,10 @@ import assert from "node:assert/strict";
 import {
   chmodSync,
   existsSync,
+  lstatSync,
   mkdtempSync,
   mkdirSync,
+  readlinkSync,
   readFileSync,
   rmSync,
   symlinkSync,
@@ -110,14 +112,6 @@ test("docs-bootstrap 在缺少全局 tsx 时自动安装到用户目录", () => 
   withTempHome((homeDir) => {
     const npmLogPath = join(homeDir, "npm.log");
     const binDir = createFakeBin(homeDir, {
-      npxScript: `#!/usr/bin/env bash
-set -euo pipefail
-if [ "$#" -ge 3 ] && [ "$1" = "-y" ] && [ "$2" = "skills" ] && [ "$3" = "--help" ]; then
-  exit 0
-fi
-echo "unexpected npx args: $*" >&2
-exit 91
-`,
       npmScript: `#!/usr/bin/env bash
 set -euo pipefail
 printf '%s\\n' "$*" >> "$FAKE_NPM_LOG"
@@ -218,73 +212,62 @@ exit 93
   });
 });
 
-test("install.sh 非交互调用 skills add", () => {
+test("install.sh 仅在运行时目录存在时覆盖复制两个 skill", () => {
   withTempHome((homeDir) => {
-    const npxLogPath = join(homeDir, "npx.log");
+    mkdirSync(join(homeDir, ".claude", "skills"), { recursive: true });
+    mkdirSync(join(homeDir, ".agents", "skills"), { recursive: true });
+    mkdirSync(join(homeDir, ".opencode", "skills"), { recursive: true });
+
+    mkdirSync(join(homeDir, ".claude", "skills", "kernel-docs-system"), { recursive: true });
+    writeFileSync(
+      join(homeDir, ".claude", "skills", "kernel-docs-system", "stale.txt"),
+      "stale",
+      "utf8"
+    );
+
     const binDir = createFakeBin(homeDir, {
       includeTsx: true,
-      npxScript: `#!/usr/bin/env bash
-set -euo pipefail
-printf '%s\\n' "$*" >> "$FAKE_NPX_LOG"
-if [ "$#" -ge 3 ] && [ "$1" = "-y" ] && [ "$2" = "skills" ] && [ "$3" = "--help" ]; then
-  exit 0
-fi
-if [ "$#" -ge 4 ] && [ "$1" = "-y" ] && [ "$2" = "skills" ] && [ "$3" = "add" ]; then
-  exit 0
-fi
-echo "unexpected npx args: $*" >&2
-exit 94
-`,
     });
 
     const result = run("bash", [INSTALL_SH], {
       env: {
         HOME: homeDir,
         PATH: scopedPath(binDir),
-        FAKE_NPX_LOG: npxLogPath,
       },
     });
 
     assert.equal(result.status, 0, result.stderr);
 
-    const npxLog = readFileSync(npxLogPath, "utf8");
-    assert.match(npxLog, /^-y skills --help$/m);
-    assert.match(npxLog, /-y skills add .* -g -a claude-code .* -y/);
-    assert.match(npxLog, /-y skills add .* -g -a opencode .* -y/);
-    assert.doesNotMatch(npxLog, /^skills --help$/m);
+    assert.equal(existsSync(join(homeDir, ".claude", "skills", "kernel-docs-system", "SKILL.md")), true);
+    assert.equal(existsSync(join(homeDir, ".claude", "skills", "kernel-code-to-docs", "SKILL.md")), true);
+    assert.equal(existsSync(join(homeDir, ".agents", "skills", "kernel-docs-system", "SKILL.md")), true);
+    assert.equal(existsSync(join(homeDir, ".agents", "skills", "kernel-code-to-docs", "SKILL.md")), true);
+    assert.equal(existsSync(join(homeDir, ".opencode", "skills", "kernel-docs-system", "SKILL.md")), true);
+    assert.equal(existsSync(join(homeDir, ".opencode", "skills", "kernel-code-to-docs", "SKILL.md")), true);
+    assert.equal(readFileSync(join(homeDir, ".claude", "skills", "kernel-docs-system", "stale.txt"), "utf8"), "stale");
   });
 });
 
-test("install.sh 在 ~/.opencode/skills 已存在时补拷贝 skill 目录", () => {
+test("install.sh 会跳过不存在的运行时目录", () => {
   withTempHome((homeDir) => {
-    const npxLogPath = join(homeDir, "npx.log");
     mkdirSync(join(homeDir, ".opencode", "skills"), { recursive: true });
 
     const binDir = createFakeBin(homeDir, {
       includeTsx: true,
-      npxScript: `#!/usr/bin/env bash
-set -euo pipefail
-printf '%s\\n' "$*" >> "$FAKE_NPX_LOG"
-if [ "$#" -ge 3 ] && [ "$1" = "-y" ] && [ "$2" = "skills" ] && [ "$3" = "--help" ]; then
-  exit 0
-fi
-if [ "$#" -ge 4 ] && [ "$1" = "-y" ] && [ "$2" = "skills" ] && [ "$3" = "add" ]; then
-  exit 0
-fi
-echo "unexpected npx args: $*" >&2
-exit 98
-`,
     });
 
     const result = run("bash", [INSTALL_SH], {
       env: {
         HOME: homeDir,
         PATH: scopedPath(binDir),
-        FAKE_NPX_LOG: npxLogPath,
       },
     });
 
     assert.equal(result.status, 0, result.stderr);
+    assert.equal(existsSync(join(homeDir, ".claude", "skills", "kernel-docs-system", "SKILL.md")), false);
+    assert.equal(existsSync(join(homeDir, ".claude", "skills", "kernel-code-to-docs", "SKILL.md")), false);
+    assert.equal(existsSync(join(homeDir, ".agents", "skills", "kernel-docs-system", "SKILL.md")), false);
+    assert.equal(existsSync(join(homeDir, ".agents", "skills", "kernel-code-to-docs", "SKILL.md")), false);
     assert.equal(existsSync(join(homeDir, ".opencode", "skills", "kernel-docs-system", "SKILL.md")), true);
     assert.equal(existsSync(join(homeDir, ".opencode", "skills", "kernel-code-to-docs", "SKILL.md")), true);
   });
@@ -328,12 +311,17 @@ exit 95
   });
 });
 
-test("uninstall.sh 非交互调用 skills remove 并清理全局安装痕迹", () => {
+test("uninstall.sh 清理复制到运行时目录的 skill 并移除全局安装痕迹", () => {
   withTempHome((homeDir) => {
-    const npxLogPath = join(homeDir, "npx.log");
     const gitLogPath = join(homeDir, "git.log");
     const claudeDir = join(homeDir, ".claude");
     mkdirSync(join(claudeDir, "bin"), { recursive: true });
+    mkdirSync(join(claudeDir, "skills", "kernel-docs-system"), { recursive: true });
+    mkdirSync(join(claudeDir, "skills", "kernel-code-to-docs"), { recursive: true });
+    mkdirSync(join(homeDir, ".agents", "skills", "kernel-docs-system"), { recursive: true });
+    mkdirSync(join(homeDir, ".agents", "skills", "kernel-code-to-docs"), { recursive: true });
+    mkdirSync(join(homeDir, ".opencode", "skills", "kernel-docs-system"), { recursive: true });
+    mkdirSync(join(homeDir, ".opencode", "skills", "kernel-code-to-docs"), { recursive: true });
     writeFileSync(join(claudeDir, "kernel-docs.env"), 'KERNEL_DOCS_REPO="/tmp/kernel-docs"\n', "utf8");
     writeFileSync(join(claudeDir, "bin", "docs-list"), "#!/usr/bin/env bash\n", "utf8");
     writeFileSync(join(claudeDir, "bin", "docs-lint"), "#!/usr/bin/env bash\n", "utf8");
@@ -356,15 +344,6 @@ test("uninstall.sh 非交互调用 skills remove 并清理全局安装痕迹", (
     );
 
     const binDir = createFakeBin(homeDir, {
-      npxScript: `#!/usr/bin/env bash
-set -euo pipefail
-printf '%s\\n' "$*" >> "$FAKE_NPX_LOG"
-if [ "$#" -ge 8 ] && [ "$1" = "-y" ] && [ "$2" = "skills" ] && [ "$3" = "remove" ] && [ "$4" = "kernel-docs-system" ] && [ "$5" = "kernel-code-to-docs" ] && [ "$6" = "-g" ] && [ "$7" = "-a" ] && { [ "$8" = "claude-code" ] || [ "$8" = "opencode" ]; }; then
-  exit 0
-fi
-echo "unexpected npx args: $*" >&2
-exit 96
-`,
       gitScript: `#!/usr/bin/env bash
 set -euo pipefail
 printf '%s\\n' "$*" >> "$FAKE_GIT_LOG"
@@ -387,16 +366,18 @@ exit 97
       env: {
         HOME: homeDir,
         PATH: scopedPath(binDir),
-        FAKE_NPX_LOG: npxLogPath,
         FAKE_GIT_LOG: gitLogPath,
       },
     });
 
     assert.equal(result.status, 0, result.stderr);
 
-    const npxLog = readFileSync(npxLogPath, "utf8");
-    assert.match(npxLog, /-y skills remove kernel-docs-system kernel-code-to-docs -g -a claude-code -y/);
-    assert.match(npxLog, /-y skills remove kernel-docs-system kernel-code-to-docs -g -a opencode -y/);
+    assert.equal(existsSync(join(claudeDir, "skills", "kernel-docs-system")), false);
+    assert.equal(existsSync(join(claudeDir, "skills", "kernel-code-to-docs")), false);
+    assert.equal(existsSync(join(homeDir, ".agents", "skills", "kernel-docs-system")), false);
+    assert.equal(existsSync(join(homeDir, ".agents", "skills", "kernel-code-to-docs")), false);
+    assert.equal(existsSync(join(homeDir, ".opencode", "skills", "kernel-docs-system")), false);
+    assert.equal(existsSync(join(homeDir, ".opencode", "skills", "kernel-code-to-docs")), false);
     assert.equal(existsSync(join(claudeDir, "kernel-docs.env")), false);
     assert.equal(existsSync(join(claudeDir, "bin", "docs-list")), false);
     assert.equal(existsSync(join(claudeDir, "bin", "docs-lint")), false);
@@ -408,4 +389,12 @@ exit 97
     const gitLog = readFileSync(gitLogPath, "utf8");
     assert.match(gitLog, /config --local --unset core\.hooksPath/);
   });
+});
+
+test("仓根 AGENTS.md 软链接到 CLAUDE.md", () => {
+  const agentsPath = join(REPO_ROOT, "AGENTS.md");
+  const stats = lstatSync(agentsPath);
+
+  assert.equal(stats.isSymbolicLink(), true);
+  assert.equal(readlinkSync(agentsPath), "CLAUDE.md");
 });

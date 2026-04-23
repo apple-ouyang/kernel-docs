@@ -30,6 +30,94 @@ description: Use when reading kernel, OS, or low-level system code and turning t
 - 结论先讲清楚，再补证据路径
 - 如果已有同主题文档，优先更新原文，而不是新建重复文档
 - 不确定点写进风险点，不要转成 TODO 清单
+- 文档路径固定为 `docs/<version>/<domain>/topic.md`
+- `process` 不单独建类，进程、线程、调度、启动、IPC 默认归 `arch`
+
+## Version And Domain Rules
+
+固定版本目录：
+
+- `v2`
+- `v3`
+- `lite`
+
+固定领域目录：
+
+- `arch`
+- `memory`
+- `filesystem`
+- `dfx`
+- `debug`
+- `security`
+- `drivers`
+
+版本判断：
+
+- 仓名以 `hm-` 开头：`v3`
+- 绝对路径包含 `RTOS_V3_master`：`v3`
+- 绝对路径包含 `RTOS_V2_master`：`v2`
+- 路径或仓名包含 `kernel-5.x`：`v2`
+- `lite` 只有用户明确说明时才按 `lite` 处理
+
+阅读已有文档时遵循非对称规则：
+
+- 当前路径命中 `v2`：只看 `docs/v2/`
+- 当前路径命中 `v3`：默认看 `docs/v3/`；只有用户明确要求参考 `v2` / `Linux` 时，才额外看 `docs/v2/`
+- 当前上下文是 `lite`：先看 `docs/lite/`；不够时再补看 `docs/v2/`；不看 `docs/v3/`
+- 当前路径无法判断版本：根据用户语义决定是否读 `docs/v2/`、`docs/v3/` 或 `docs/lite/`
+
+## Front Matter And Structure
+
+最小 front matter：
+
+```yaml
+---
+summary: 一句话概括这篇调研解决了什么理解问题
+read_when:
+  - AI 需要判断这篇文档是否覆盖当前代码调研目标时
+  - 准备修改相关模块前
+---
+```
+
+推荐正文结构：
+
+```md
+# 标题
+
+## TL;DR
+
+## 模块边界
+
+## 关键数据结构
+
+## 调用链
+
+## 并发与内存语义
+
+## 接口与约束
+
+## 风险点
+
+## 证据索引
+```
+
+`source` 如果需要写：
+
+- 参考文档：只写文档名
+- 参考代码：写 `git仓库名:仓内相对路径`
+- 不要求穷举所有参考文件，只记录主要来源
+
+## What To Extract
+
+读代码后优先提炼这些内容：
+
+- 模块边界
+- 关键数据结构
+- 核心调用链
+- 锁、线程、内存语义
+- 接口约束和输入输出假设
+- 容易改坏的风险点
+- 证据索引
 
 ## Stop Conditions
 
@@ -39,14 +127,6 @@ description: Use when reading kernel, OS, or low-level system code and turning t
 - 还没判断该更新旧文还是新建
 - 证据不足以支撑结论
 - 用户真正要的是归档、迁移步骤或计划
-
-## References
-
-按需读取，不要一次全开：
-
-- `references/path-and-routing.md`
-- `references/extraction-checklist.md`
-- `references/doc-structure.md`
 
 ## Output Contract
 

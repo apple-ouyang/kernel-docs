@@ -36,10 +36,83 @@ description: Use when you need to treat `docs/**/*.md` as a routed docs system f
 - 文档入口发现必须先走 `docs-list`
 - 不要用 `rg`、`grep`、`find` 直接扫描 `docs/` 决定先读哪篇
 - `archive` 默认隐藏；只有显式 `--all` 才展示
-- `archive` 是生命周期，不是版本维度
+- `archive` 是生命周期，不是版本维度；归档路径固定为 `docs/archive/<domain>/`
+- 文档路径固定为 `docs/<version>/<domain>/topic.md`
+- 不使用 `plan` / `research` 深目录
+- `process` 已并入 `arch`
 - `docs-migrate` 只补外壳，不做完整语义迁移
 - `summary` 必须回答“这篇文档帮助做什么判断/操作”
+- `summary` 不能写成 `TODO`、`待补充`、`占位`
 - `read_when` 必须写成任务触发语句
+- `read_when` 不能只写“修改前”“需要时”“排查时”
+
+## Version And Domain Rules
+
+固定版本目录：
+
+- `v2`
+- `v3`
+- `lite`
+
+固定领域目录：
+
+- `arch`
+- `memory`
+- `filesystem`
+- `dfx`
+- `debug`
+- `security`
+- `drivers`
+
+归类规则：
+
+- 架构、启动、调度、IPC、跨子系统机制：`arch`
+- 内存管理、页表、分配器、缺页异常：`memory`
+- VFS、具体文件系统实现、缓存一致性：`filesystem`
+- 日志、trace、观测、诊断链路：`dfx`
+- GDB、crash 分析、现场定位、调试手册：`debug`
+- 权限、隔离、认证、加固：`security`
+- 设备模型、总线、驱动框架、外设适配：`drivers`
+
+版本判断：
+
+- 仓名以 `hm-` 开头：`v3`
+- 绝对路径包含 `RTOS_V3_master`：`v3`
+- 绝对路径包含 `RTOS_V2_master`：`v2`
+- 路径或仓名包含 `kernel-5.x`：`v2`
+- `lite` 只有用户明确说明时才按 `lite` 处理
+
+阅读已有文档时遵循非对称规则：
+
+- 当前路径命中 `v2`：只看 `docs/v2/`
+- 当前路径命中 `v3`：默认看 `docs/v3/`；只有用户明确要求参考 `v2` / `Linux` 时，才额外看 `docs/v2/`
+- 当前上下文是 `lite`：先看 `docs/lite/`；不够时再补看 `docs/v2/`；不看 `docs/v3/`
+- 当前路径无法判断版本：根据用户提到的 `V2` / `Linux` / `V3` / `鸿蒙` / `lite` 选择版本文档
+- 需要追历史实现或废弃方案时，再额外看 `docs/archive/`
+
+## Front Matter
+
+推荐最小模板：
+
+```yaml
+---
+summary: 一句话说明这篇文档帮助完成什么判断或操作
+read_when:
+  - 遇到什么任务、决策或排障场景时先读
+---
+```
+
+约束：
+
+- `summary` 优先写“作用 + 决策对象”，不要只重复标题
+- `read_when` 表示“AI 在什么场景下应该优先读这篇文档”
+- `read_when` 要写成任务触发语句，不要写成状态词、作者备注或空泛占位
+
+`source` 如果需要写，语义是“这篇文档主要基于什么材料写成”，不是必填路径：
+
+- 参考文档时，只记录文档名
+- 参考代码时，写 `git仓库名:仓内相对路径`
+- 不要求穷举所有参考文件；精确证据路径和行号放正文
 
 ## Stop Conditions
 
@@ -49,21 +122,13 @@ description: Use when you need to treat `docs/**/*.md` as a routed docs system f
 - 任务核心已经变成代码调研沉淀，而不是 docs 入口维护
 - 落点还没判断清楚，就准备直接新建文件
 
-这时改走归档流程或 `kernel-code-to-docs`。
+这时改走 archive / knowledge-lift 流程或 `kernel-code-to-docs`。
 
 ## Commands
 
 - `~/.claude/bin/docs-list [repo-root] [--all] [--version <v2|v3|lite>] [--domain <domain>] [--json]`
 - `~/.claude/bin/docs-lint [repo-root] [--files <path...>]`
 - `~/.claude/bin/docs-migrate [repo-root] [--files <path...>] --write`
-
-## References
-
-按需读取，不要整包展开：
-
-- `references/version-routing.md`
-- `references/front-matter.md`
-- `references/domain-map.md`
 
 ## Output Contract
 

@@ -37,7 +37,10 @@ node --test tests/*.test.mjs
 
 - 运行环境检查：确认 `node`、`npm`、`npx`、`git` 可用，并确保 `tsx` 可运行
 - 本仓 pre-commit：将当前仓的 `core.hooksPath` 指向 `.githooks`
-- Claude Code / OpenCode skills：安装 `kernel-docs-system` 和 `kernel-code-to-docs`；若 `~/.opencode/skills` 已存在，再额外手动复制一份进去
+- Runtime skills：如果以下目录存在，就直接用 `cp` 覆盖安装这两个 Skill
+  - `~/.claude/skills`
+  - `~/.agents/skills`
+  - `~/.opencode/skills`
 - 全局命令：安装 `~/.claude/bin/docs-list`、`docs-lint`、`docs-migrate`
 - 全局提示词：把受管的 Docs 规则写入 `~/.claude/CLAUDE.md`
 - 全局环境文件：写入 `~/.claude/kernel-docs.env`，让全局命令知道当前 `kernel-docs` 仓的位置
@@ -121,8 +124,8 @@ source:
 - `kernel-docs-system`: 负责文档入口发现、元数据校验、旧文档迁移和版本/领域落点判断
 - `kernel-code-to-docs`: 负责先判定落点、再读代码、最后沉淀成长期文档，并明确更新旧文还是新建
 
-安装脚本会把这两个 Skill 安装到 Claude Code 和 OpenCode；如果本机已经存在 `~/.opencode/skills`，还会额外把当前仓的 skill 目录手动复制进去，不存在则跳过。
-它也会安装 `~/.claude/bin/docs-list`、`docs-lint`、`docs-migrate`，并同步全局 `~/.claude/CLAUDE.md` 里的 Docs 提示词。
+安装脚本会在运行时目录已存在时，直接把这两个 Skill 复制覆盖到对应目录；不存在就跳过，不会强行创建新的 host 运行时目录。
+它也会安装 `~/.claude/bin/docs-list`、`docs-lint`、`docs-migrate`，并同步全局 `~/.claude/CLAUDE.md` 里的 Docs 提示词。项目级维护规则直接写在仓内 `CLAUDE.md`，并由 `AGENTS.md` 软链接过去。
 
 ## 卸载
 
@@ -137,6 +140,6 @@ source:
 - 移除全局 `docs-*` wrapper 和 `~/.claude/kernel-docs.env`
 - 清掉全局 `~/.claude/CLAUDE.md` 里的受管 Docs 区块
 - 撤销本仓 `core.hooksPath=.githooks`
-- 卸载安装到 Claude Code 的两个 skill
+- 卸载复制到运行时目录的两个 Skill
 
 它不会删除共享的 `tsx` 运行时。
