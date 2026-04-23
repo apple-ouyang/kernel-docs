@@ -4,7 +4,7 @@
   "scripts": {
     "docs:list": "bash scripts/run-tsx.sh scripts/docs-list.ts .",
     "docs:lint": "bash scripts/run-tsx.sh scripts/docs-lint.ts .",
-    "docs:migrate": "bash scripts/run-tsx.sh scripts/docs-migrate.ts .",
+    "docs:init-frontmatter": "bash scripts/run-tsx.sh scripts/docs-init-frontmatter.ts .",
     "test": "node --test tests/*.test.mjs"
   }
 }

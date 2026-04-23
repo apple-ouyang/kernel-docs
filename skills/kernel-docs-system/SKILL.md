@@ -3,7 +3,7 @@ name: kernel-docs-system
 description: >
   Use when you need to treat `docs/**/*.md` as a routed docs system for kernel and low-level repos:
   list doc entrypoints, choose what to read from `summary` and `read_when`, lint metadata quality,
-  migrate legacy docs to the shared front matter, or decide the correct `version/domain` landing path
+  initialize empty front matter for legacy docs, or decide the correct `version/domain` landing path
   before writing. Do not use for archive and knowledge-lift work, or when the main job is reading code
   and turning that code reading into a durable doc.
 ---
@@ -37,9 +37,9 @@ description: >
 - `Lint`
   - 运行 `docs-lint`
   - 同时检查路径、缺字段、占位 `summary`、空泛 `read_when`
-- `Migrate`
-  - 运行 `docs-migrate --write`
-  - 只补最小 front matter，不重写正文
+- `Init Front Matter`
+  - 运行 `docs-init-frontmatter --write`
+  - 只补空的 YAML 外壳，不重写正文
 - `Route`
   - 先判断版本，再判断领域，再决定是否需要抽查同主题旧文档
 
@@ -58,7 +58,7 @@ description: >
 - 文档路径固定为 `~/kernel-docs/docs/<version>/<domain>/topic.md`
 - 不使用 `plan` / `research` 深目录
 - `process` 已并入 `arch`
-- `docs-migrate` 只补外壳，不做完整语义迁移
+- `docs-init-frontmatter` 只补空的 YAML 外壳，不补任何字段内容
 - `summary` 必须回答“这篇文档帮助做什么判断/操作”
 - `summary` 不能写成 `TODO`、`待补充`、`占位`
 - `read_when` 必须写成任务触发语句
@@ -153,7 +153,7 @@ read_when:
 - `git pull --rebase`
 - `~/.claude/bin/docs-list [--all] [--version <v2|v3|lite>] [--domain <domain>] [--json]`
 - `~/.claude/bin/docs-lint [--files <path...>]`
-- `~/.claude/bin/docs-migrate [--files <path...>] --write`
+- `~/.claude/bin/docs-init-frontmatter [--files <path...>] --write`
 - 不传仓路径时，这些命令默认操作 `~/kernel-docs`
 
 ## Output Contract
@@ -162,7 +162,7 @@ read_when:
 
 - 这次应该先读哪些文档，以及为什么
 - 哪些文件元数据不合规
-- 哪些旧文档已补最小模板
+- 哪些旧文档已补空 YAML 头
 - 某篇文档更适合哪个 `version/domain`
 - 如果没有相关文档，为什么要转交 `kernel-code-to-docs`
 
@@ -170,6 +170,6 @@ read_when:
 
 - 入口发现：只看输出就能决定下一篇该读什么
 - 元数据校验：问题文件、问题类型、下一步动作都明确
-- 迁移：正文原样保留，只补最小外壳
+- 空 YAML 头初始化：正文原样保留，只补空外壳
 - 路由：版本和领域判断都有依据
 - 缺文档时：不会停在入口层，而是明确转到 `kernel-code-to-docs`

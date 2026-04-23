@@ -16,7 +16,7 @@ const { docs } = loadDocuments(repoArg, selectedFiles);
 const targets = docs.filter((doc) => !doc.metadata.hasFrontMatter);
 
 if (targets.length === 0) {
-  console.log("没有需要迁移的旧文档。");
+  console.log("没有需要补空 front matter 的文档。");
   process.exit(0);
 }
 
@@ -26,14 +26,14 @@ if (!write) {
     console.log(`- ${doc.relativePath}`);
   }
   console.log("");
-  console.log("加上 --write 后会为这些文档补齐最小 front matter 外壳。");
-  console.log("注意：summary / read_when 仍应由 AI 继续复核和完善。");
+  console.log("加上 --write 后会为这些文档补齐空的 YAML front matter 外壳。");
+  console.log("脚本不会自动生成 summary / read_when 内容。");
   process.exit(0);
 }
 
 for (const doc of targets) {
   const current = readFileSync(doc.fullPath, "utf8");
-  const migrated = buildFrontMatter(doc.relativePath, current);
-  writeContent(doc.fullPath, migrated);
-  console.log(`migrated: ${doc.relativePath}`);
+  const initialized = buildFrontMatter(doc.relativePath, current);
+  writeContent(doc.fullPath, initialized);
+  console.log(`initialized: ${doc.relativePath}`);
 }

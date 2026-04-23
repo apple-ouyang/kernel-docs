@@ -53,12 +53,12 @@ test("install-global-bin 安装全局 wrapper 并记录当前仓路径", () => {
     const envPath = join(homeDir, ".claude", "kernel-docs.env");
     const docsListPath = join(homeDir, ".claude", "bin", "docs-list");
     const docsLintPath = join(homeDir, ".claude", "bin", "docs-lint");
-    const docsMigratePath = join(homeDir, ".claude", "bin", "docs-migrate");
+    const docsInitFrontmatterPath = join(homeDir, ".claude", "bin", "docs-init-frontmatter");
 
     assert.equal(existsSync(envPath), true);
     assert.equal(existsSync(docsListPath), true);
     assert.equal(existsSync(docsLintPath), true);
-    assert.equal(existsSync(docsMigratePath), true);
+    assert.equal(existsSync(docsInitFrontmatterPath), true);
 
     const envContent = readFileSync(envPath, "utf8");
     assert.match(envContent, /KERNEL_DOCS_REPO=".*\/kernel-docs"/);
@@ -141,7 +141,7 @@ test("uninstall-global-bin 移除全局 wrapper 和 env 文件", () => {
     assert.equal(existsSync(join(homeDir, ".claude", "kernel-docs.env")), false);
     assert.equal(existsSync(join(homeDir, ".claude", "bin", "docs-list")), false);
     assert.equal(existsSync(join(homeDir, ".claude", "bin", "docs-lint")), false);
-    assert.equal(existsSync(join(homeDir, ".claude", "bin", "docs-migrate")), false);
+    assert.equal(existsSync(join(homeDir, ".claude", "bin", "docs-init-frontmatter")), false);
   });
 });
 

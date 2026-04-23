@@ -33,16 +33,6 @@ export const DOC_VERSION_LABELS: Record<DocVersion, string> = {
   lite: "Lite",
 };
 
-const DEFAULT_READ_WHEN: Record<DocDomain, string> = {
-  arch: "任务涉及架构、启动、调度、IPC 或跨子系统机制时",
-  memory: "任务涉及页表、分配器、缺页异常或内存管理时",
-  filesystem: "任务涉及 VFS、文件系统实现、缓存一致性或 IO 路径时",
-  dfx: "任务涉及日志、trace、观测、诊断或性能分析时",
-  debug: "任务涉及崩溃定位、GDB、现场还原或调试方法时",
-  security: "任务涉及权限、隔离、认证、访问控制或安全加固时",
-  drivers: "任务涉及设备模型、驱动框架、总线或外设适配时",
-};
-
 export interface DocMetadata {
   hasFrontMatter: boolean;
   summary: string | null;
@@ -207,16 +197,10 @@ export function buildFrontMatter(relativePath: string, content: string): string 
     return content;
   }
 
-  const title = parsed.title ?? basename(relativePath, extname(relativePath));
-  const { group, archivedDomain } = classifyPath(relativePath);
-  const domain = group === "unknown" ? archivedDomain : group;
-  const readWhen = domain && domain !== "unknown" ? DEFAULT_READ_WHEN[domain] : "AI 需要判断这篇文档是否与当前任务相关时";
-
   const frontMatter = [
     "---",
-    `summary: ${sanitizeScalar(title)}`,
-    "read_when:",
-    `  - ${sanitizeScalar(readWhen)}`,
+    'summary: ""',
+    "read_when: []",
     "---",
     "",
   ].join("\n");

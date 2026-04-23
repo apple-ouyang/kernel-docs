@@ -4,7 +4,7 @@ description: >
   Use when reading kernel, OS, or low-level system code and turning that code reading into a durable
   doc under `docs/`: choose the correct `version/domain`, decide whether to update or create a doc,
   extract the stable conclusions, and write the result as a reusable design note rather than a plan
-  or TODO list. Do not use for docs-only entrypoint maintenance, metadata lint or migrate tasks, or
+  or TODO list. Do not use for docs-only entrypoint maintenance, metadata lint or front matter init tasks, or
   archive and knowledge-lift work.
 ---
 

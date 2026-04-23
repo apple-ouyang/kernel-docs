@@ -24,5 +24,6 @@ remove_path "$ENV_PATH"
 remove_path "${BIN_DIR}/docs-list"
 remove_path "${BIN_DIR}/docs-lint"
 remove_path "${BIN_DIR}/docs-migrate"
+remove_path "${BIN_DIR}/docs-init-frontmatter"
 
 echo "已移除全局 docs 命令和环境文件。"

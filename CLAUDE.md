@@ -9,7 +9,7 @@
   - `kernel-code-to-docs`
 - 每个 Skill 的规则必须完整维护在各自目录下的单个 `SKILL.md`
 - 不要把 Skill 说明再拆到 `references/`、`agents/interface.yaml`、独立 eval 文档里
-- `kernel-docs-system` 负责文档入口发现、元数据校验、旧文档迁移和版本/领域落点判断
+- `kernel-docs-system` 负责文档入口发现、元数据校验、旧文档空 YAML 头初始化和版本/领域落点判断
 - `kernel-code-to-docs` 负责读代码后沉淀长期文档
 - 项目级 `CLAUDE.md` 只保留仓库约束和维护规则，不内联 Skill 正文
 
@@ -67,7 +67,7 @@
 2. 如果今天尚未成功 pull 且工作区干净，先执行 `git pull --rebase`；工作区不干净时停止并说明原因
 3. 编写或修改文档前，先运行 `~/.claude/bin/docs-list`
 4. 提交前运行 `~/.claude/bin/docs-lint`
-5. 旧文档补格式时运行 `~/.claude/bin/docs-migrate --write`
+5. 旧文档补空 YAML 头时运行 `~/.claude/bin/docs-init-frontmatter --write`
 6. 本地提交默认依赖 `.githooks/pre-commit`
 7. docs-only 任务默认走 `kernel-docs-system`
 8. 如果缺少相关文档，`kernel-docs-system` 默认单向转交 `kernel-code-to-docs`

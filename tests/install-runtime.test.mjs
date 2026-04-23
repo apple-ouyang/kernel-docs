@@ -147,7 +147,7 @@ exit 92
     assert.equal(existsSync(join(homeDir, ".claude", "tools", "tsx", "bin", "tsx")), true);
     assert.match(result.stdout, /~\/\.claude\/bin\/docs-list/);
     assert.match(result.stdout, /~\/\.claude\/bin\/docs-lint/);
-    assert.match(result.stdout, /~\/\.claude\/bin\/docs-migrate --write/);
+    assert.match(result.stdout, /~\/\.claude\/bin\/docs-init-frontmatter --write/);
     assert.doesNotMatch(result.stdout, /npm run docs:/);
 
     const npmLog = readFileSync(npmLogPath, "utf8");
@@ -349,7 +349,7 @@ test("uninstall.sh 清理复制到运行时目录的 skill 并移除全局安装
     writeFileSync(join(claudeDir, "kernel-docs.env"), 'KERNEL_DOCS_REPO="/tmp/kernel-docs"\n', "utf8");
     writeFileSync(join(claudeDir, "bin", "docs-list"), "#!/usr/bin/env bash\n", "utf8");
     writeFileSync(join(claudeDir, "bin", "docs-lint"), "#!/usr/bin/env bash\n", "utf8");
-    writeFileSync(join(claudeDir, "bin", "docs-migrate"), "#!/usr/bin/env bash\n", "utf8");
+    writeFileSync(join(claudeDir, "bin", "docs-init-frontmatter"), "#!/usr/bin/env bash\n", "utf8");
     writeFileSync(
       join(claudeDir, "CLAUDE.md"),
       `# 全局指令
@@ -406,7 +406,7 @@ exit 97
     assert.equal(existsSync(join(claudeDir, "kernel-docs.env")), false);
     assert.equal(existsSync(join(claudeDir, "bin", "docs-list")), false);
     assert.equal(existsSync(join(claudeDir, "bin", "docs-lint")), false);
-    assert.equal(existsSync(join(claudeDir, "bin", "docs-migrate")), false);
+    assert.equal(existsSync(join(claudeDir, "bin", "docs-init-frontmatter")), false);
 
     const claudeContent = readFileSync(join(claudeDir, "CLAUDE.md"), "utf8");
     assert.doesNotMatch(claudeContent, /kernel-docs:managed:start/);

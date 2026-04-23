@@ -20,7 +20,7 @@
 ~/.claude/bin/docs-list --version v3 --domain memory
 ~/.claude/bin/docs-list --json
 ~/.claude/bin/docs-lint
-~/.claude/bin/docs-migrate --write
+~/.claude/bin/docs-init-frontmatter --write
 node --test tests/*.test.mjs
 ```
 
@@ -28,7 +28,7 @@ node --test tests/*.test.mjs
 
 - `docs-list`: 列出目标仓 `docs/` 下当前可参考的文档入口，默认隐藏 `archive`，可按 `version/domain` 缩小范围，必要时输出 JSON
 - `docs-lint`: 校验目标仓文档的 front matter 是否满足约定，也会拦截 `TODO`、`待补充`、`修改前` 这类没有筛选价值的占位写法
-- `docs-migrate`: 给旧文档补齐统一模板，可配合 `--write` 直接落盘
+- `docs-init-frontmatter`: 给旧文档补齐空的 YAML front matter 外壳，可配合 `--write` 直接落盘
 - `node --test tests/*.test.mjs`: 验证安装脚本、文档脚本和元数据规则没有回归
 
 如果系统里没有 `tsx`，脚本会自动先尝试 `npm install -g tsx`，失败后再回退到 `~/.claude/tools/tsx` 里的用户目录安装；两种方式都失败时，才提示手工安装。
@@ -44,7 +44,7 @@ node --test tests/*.test.mjs
   - `~/.claude/skills`
   - `~/.agents/skills`
   - `~/.opencode/skills`
-- 全局命令：安装 `~/.claude/bin/docs-list`、`docs-lint`、`docs-migrate`
+- 全局命令：安装 `~/.claude/bin/docs-list`、`docs-lint`、`docs-init-frontmatter`
 - 全局提示词：把受管的 Docs 规则写入 `~/.claude/CLAUDE.md`
 - 全局环境文件：写入 `~/.claude/kernel-docs.env`，让全局命令知道当前 `kernel-docs` 仓的位置
 - 稳定仓入口：如果当前仓不在 `~/kernel-docs`，就创建或更新这个软链接，供 README、Skill 和提示词统一引用
@@ -125,7 +125,7 @@ source:
 
 这个仓里默认带两个独立 Skill：
 
-- `kernel-docs-system`: 负责先做每日同步检查，再做文档入口发现、元数据校验、旧文档迁移和版本/领域落点判断；如果缺少相关文档，默认单向转交 `kernel-code-to-docs`
+- `kernel-docs-system`: 负责先做每日同步检查，再做文档入口发现、元数据校验、旧文档空 YAML 头初始化和版本/领域落点判断；如果缺少相关文档，默认单向转交 `kernel-code-to-docs`
 - `kernel-code-to-docs`: 负责先做每日同步检查、再按 `docs-list` 与路由规则确认入口、再读代码、按代码修正文档、最后沉淀成长期文档，并在落盘后提交文档改动、执行 `git mr --yes`
 
 默认同步规则：
@@ -146,7 +146,7 @@ source:
 - 代码是事实真源；如果已有文档与代码不一致，优先修改文档，不保留与代码冲突的描述
 
 安装脚本会在运行时目录已存在时，直接把这两个 Skill 复制覆盖到对应目录；不存在就跳过，不会强行创建新的 host 运行时目录。
-它也会安装 `~/.claude/bin/docs-list`、`docs-lint`、`docs-migrate`，同步全局 `~/.claude/CLAUDE.md` 里的 Docs 提示词，并确保长期文档仓固定入口可见为 `~/kernel-docs`。项目级维护规则直接写在仓内 `CLAUDE.md`，并由 `AGENTS.md` 软链接过去。
+它也会安装 `~/.claude/bin/docs-list`、`docs-lint`、`docs-init-frontmatter`，同步全局 `~/.claude/CLAUDE.md` 里的 Docs 提示词，并确保长期文档仓固定入口可见为 `~/kernel-docs`。项目级维护规则直接写在仓内 `CLAUDE.md`，并由 `AGENTS.md` 软链接过去。
 
 ## 卸载
 

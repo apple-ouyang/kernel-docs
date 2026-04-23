@@ -10,7 +10,7 @@ const THIS_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(THIS_DIR, "..");
 const DOCS_LIST = join(REPO_ROOT, "scripts", "docs-list.ts");
 const DOCS_LINT = join(REPO_ROOT, "scripts", "docs-lint.ts");
-const DOCS_MIGRATE = join(REPO_ROOT, "scripts", "docs-migrate.ts");
+const DOCS_INIT_FRONTMATTER = join(REPO_ROOT, "scripts", "docs-init-frontmatter.ts");
 
 function withTempRepo(setup) {
   const repoRoot = mkdtempSync(join(tmpdir(), "docs-system-"));
@@ -248,6 +248,27 @@ read_when:
   });
 });
 
+test("docs-lint 拒绝空 front matter 值", () => {
+  withTempRepo((repoRoot) => {
+    writeFile(
+      join(repoRoot, "docs", "v2", "memory", "empty-front-matter.md"),
+      `---
+summary: ""
+read_when: []
+---
+
+# 缺页异常
+`
+    );
+
+    const result = runTsx(DOCS_LINT, [repoRoot]);
+
+    assert.notEqual(result.status, 0, "lint 应该失败");
+    assert.match(result.stdout + result.stderr, /missing summary/i);
+    assert.match(result.stdout + result.stderr, /missing read_when/i);
+  });
+});
+
 test("docs-lint 拒绝未定义的顶层分类", () => {
   withTempRepo((repoRoot) => {
     writeFile(
@@ -312,7 +333,7 @@ read_when:
   });
 });
 
-test("docs-migrate 为旧文档补齐 summary 和 read_when", () => {
+test("docs-init-frontmatter 只为旧文档补齐空的 front matter 外壳", () => {
   withTempRepo((repoRoot) => {
     const targetPath = join(repoRoot, "docs", "v2", "debug", "crash.md");
     writeFile(
@@ -323,12 +344,13 @@ test("docs-migrate 为旧文档补齐 summary 和 read_when", () => {
 `
     );
 
-    const migrateResult = runTsx(DOCS_MIGRATE, [repoRoot, "--write"]);
-    assert.equal(migrateResult.status, 0, migrateResult.stderr);
+    const initResult = runTsx(DOCS_INIT_FRONTMATTER, [repoRoot, "--write"]);
+    assert.equal(initResult.status, 0, initResult.stderr);
 
     const content = readFileSync(targetPath, "utf8");
     assert.match(content, /^---\n/);
-    assert.match(content, /summary: Crash 路径调研/);
-    assert.match(content, /read_when:\n  - 任务涉及崩溃定位、GDB、现场还原或调试方法时/);
+    assert.match(content, /summary: ""/);
+    assert.match(content, /read_when: \[\]/);
+    assert.doesNotMatch(content, /Crash 路径调研\n---/);
   });
 });
