@@ -70,7 +70,7 @@
 5. 旧文档补格式时运行 `~/.claude/bin/docs-migrate --write`
 6. 本地提交默认依赖 `.githooks/pre-commit`
 7. docs-only 任务默认走 `kernel-docs-system`
-8. 如果缺少相关文档，`kernel-docs-system` 默认转交 `kernel-code-to-docs`
-9. 代码调研沉淀任务默认走 `kernel-code-to-docs`
+8. 如果缺少相关文档，`kernel-docs-system` 默认单向转交 `kernel-code-to-docs`
+9. 代码调研沉淀任务默认走 `kernel-code-to-docs`，进入后直接复用 `docs-list` 与路由规则，不再回跳 `kernel-docs-system`
 10. `kernel-code-to-docs` 发现文档与代码不一致时，默认按代码修正文档
 11. `kernel-code-to-docs` 落盘后默认提交文档改动，并在 commit 成功后执行 `git mr --yes`

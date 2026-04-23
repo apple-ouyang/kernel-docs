@@ -64,6 +64,7 @@ description: >
 - `read_when` 必须写成任务触发语句
 - `read_when` 不能只写“修改前”“需要时”“排查时”
 - `Discover` / `Route` 场景下，如果文档入口不足以覆盖当前问题，默认继续读代码并转交 `kernel-code-to-docs`，不要停在“没有文档”
+- 这个转交是单向的；一旦已经进入 `kernel-code-to-docs`，不要再回跳到本 Skill 做二次分发
 
 ## Version And Domain Rules
 

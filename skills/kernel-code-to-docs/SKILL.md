@@ -26,7 +26,7 @@ description: >
 
 1. 先检查当前 `repo_root + branch` 今天是否已经成功执行过 `git pull --rebase`
 2. 如果今天尚未成功 pull，且工作区干净，则先执行 `git pull --rebase`
-3. 调用 `kernel-docs-system` 看现有文档入口
+3. 按 `kernel-docs-system` 的入口规则直接运行 `docs-list`，查看现有文档入口
 4. 判断这次调研的 `version/domain`
 5. 抽查同主题文档，决定是更新原文还是新建
 6. 读代码并提炼稳定结论
@@ -43,6 +43,7 @@ description: >
 - 只有成功 pull 才更新每日状态；失败不算完成
 - 不要把输出写成计划文档
 - 不要单独创建 `research/` 目录
+- 已经进入本 Skill 后，不要再回跳 `kernel-docs-system` 做二次分发；这里只复用它的 `docs-list` 与路由规则
 - 代码是事实真源；代码与文档冲突时，必须以代码为准修正文档
 - 结论先讲清楚，再补证据路径
 - 如果已有同主题文档，优先更新原文，而不是新建重复文档
@@ -150,7 +151,7 @@ read_when:
 
 ## Commit And MR
 
-- commit 标题默认使用 `docs(<domain>): <补充或更新><主题>文档`
+- commit 标题默认使用 `docs(<domain>): <补充、更新或纠正><主题>文档`
 - `<domain>` 只在能清楚表达领域时填写，例如 `docs(memory): 补充页表切换文档`
 - 正文至少包含“原因：”和“改动：”两段；只有存在兼容性或迁移影响时再补“影响：”
 - 提交必须通过一条原子 git 命令完成，命令中显式列出目标路径，不要依赖 repo-wide staging
@@ -160,10 +161,10 @@ read_when:
 推荐 commit message 模板：
 
 ```text
-docs(<domain>): <补充或更新><主题>文档
+docs(<domain>): <补充、更新或纠正><主题>文档
 
 原因：
-- 当前问题缺少可复用的长期文档入口
+- 当前问题缺少可复用的长期文档入口，或现有文档与代码不一致
 
 改动：
 - 新建或更新目标主题文档
