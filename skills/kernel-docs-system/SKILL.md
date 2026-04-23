@@ -15,6 +15,25 @@ description: Use when working in repositories that treat kernel and system docs 
 - 需要根据 `summary` 和 `read_when` 选择该读哪篇文档
 - 新增或维护 `docs/` 下的 markdown，希望统一 front matter
 - 旧文档没有 front matter，需要批量补模板
+- 需要判断某篇文档应该落到哪个版本目录和领域目录
+
+## Execution Modes
+
+- `Discover`
+  - 列入口
+  - 根据 `summary` 和 `read_when` 推荐先读哪些文档
+  - 需要时用 `--version`、`--domain`、`--json` 缩小范围
+- `Lint`
+  - 校验路径、front matter、占位 `summary`、空泛 `read_when`
+  - 默认优先用于提交前或批量修改后
+- `Migrate`
+  - 只给旧文档补最小 front matter 外壳
+  - 不顺手重写正文，不把迁移偷换成语义改写
+- `Route`
+  - 判断一篇文档该落到哪个 `version/domain`
+  - 先判断版本，再判断领域，再决定是否需要读同主题旧文档
+
+如果用户没有显式说明，默认先走 `Discover`。
 
 ## Fixed Rules
 
@@ -41,12 +60,25 @@ description: Use when working in repositories that treat kernel and system docs 
 - `docs-migrate.ts` 只负责补最小 front matter 外壳，不负责完整语义迁移
 - 大批量旧文档迁移默认拆成不重叠的小批次处理，不要在单个上下文里硬吃几十篇文档
 - `summary` 必须优先回答“这篇文档帮助做什么决策 / 操作”，不要只是改写标题
+- `summary` 不能写成 `TODO`、`待补充`、`占位` 这类占位词
 - `read_when` 必须写成任务触发语句，最好接近用户会说的话，不要写成空泛短语
+- `read_when` 不能只写“修改前”“需要时”“排查时”这类没有筛选力的话
 - `docs-list` 只保留入口路由信息：分组、路径、`summary`、`read_when`、archive 轻提示；不要把正文预览或完整 front matter 混进首屏
+
+## Stop Conditions
+
+遇到下面几种情况，不要继续在这个 skill 里硬做：
+
+- 用户真正要的是归档、知识上浮、修复错误归档
+- 目标不是 `docs/` 入口系统，而是代码调研沉淀
+- 文档落点还没判断清楚，但已经准备直接新建文件
+- 用户试图直接全文扫描 `docs/` 决定读哪篇，先切回 `docs-list`
+
+这几类情况要么切到归档流程，要么切到 `kernel-code-to-docs`。
 
 ## Commands
 
-- 列出文档：`~/.claude/bin/docs-list [repo-root] [--all]`
+- 列出文档：`~/.claude/bin/docs-list [repo-root] [--all] [--version <v2|v3|lite>] [--domain <domain>] [--json]`
 - 校验元数据：`~/.claude/bin/docs-lint [repo-root] [--files <path...>]`
 - 为旧文档补模板：`~/.claude/bin/docs-migrate [repo-root] [--files <path...>] --write`
 
@@ -76,6 +108,7 @@ read_when:
 避免写法：
 
 - `summary` 只重复标题
+- `summary` 写成 `TODO`、`待补充`、`占位`
 - `read_when` 只写“修改前”“需要时”“排查时”
 - `read_when` 留 `TODO`
 
@@ -115,6 +148,24 @@ read_when:
 - 参考文档：只写文档名
 - 参考代码：写 `git仓库名:仓内相对路径`
 - 不要求穷举所有参考文件，只写主要来源
+
+## Output Contract
+
+默认输出必须至少回答下面一项：
+
+- 这次应该先读哪些 active docs
+- 哪些文件元数据不合规
+- 哪些旧文档已补最小模板
+- 某篇文档更适合哪个 `version/domain`
+
+如果给的是推荐列表，不要只贴路径，还要写“为什么先读它”。
+
+## Done Criteria
+
+- 入口发现类任务：只看这次输出，就能决定下一篇该读什么
+- 元数据校验类任务：问题文件、问题类型、下一步动作都明确
+- 迁移类任务：正文原样保留，只补最小外壳
+- 路由类任务：版本和领域判断都有依据，不是拍脑袋
 
 ## Common Mistakes
 

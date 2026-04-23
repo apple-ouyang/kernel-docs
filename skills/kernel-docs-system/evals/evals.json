@@ -36,6 +36,24 @@
       "prompt": "这是 lite 线的需求，代码仓规则还没定，先按 lite 文档面给我列出入口，不够时再看看 V2。",
       "expected_output": "应该把当前上下文按 lite 处理，先优先选择 docs/lite/，不够时再补读 docs/v2/，不要把 docs/v3/ 当成默认阅读面。",
       "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "先只给我看 v3 memory 这一个阅读面，我要快速决定下一篇先读哪篇。",
+      "expected_output": "应该支持缩小到特定 version/domain 的入口列表，而不是继续把其他领域和版本一起铺开。",
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "帮我检查 docs 里的 front matter，别只看有没有字段，像 TODO、待补充、修改前 这种占位也要报出来。",
+      "expected_output": "应该在 docs-lint 中同时报缺字段和低质量 summary/read_when，占位词与空泛 read_when 不能通过校验。",
+      "files": []
+    },
+    {
+      "id": 9,
+      "prompt": "我只要一份机器可读的 docs 入口列表，后面我要自己做二次筛选。",
+      "expected_output": "应该允许输出结构化入口信息，至少包含路径、summary、read_when、version、domain 和 archive 状态。",
+      "files": []
     }
   ]
 }

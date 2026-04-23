@@ -14,6 +14,8 @@
 
 ```bash
 ~/.claude/bin/docs-list /path/to/target-repo
+~/.claude/bin/docs-list /path/to/target-repo --version v3 --domain memory
+~/.claude/bin/docs-list /path/to/target-repo --json
 ~/.claude/bin/docs-lint /path/to/target-repo
 ~/.claude/bin/docs-migrate /path/to/target-repo --write
 node --test tests/*.test.mjs
@@ -21,8 +23,8 @@ node --test tests/*.test.mjs
 
 这些命令分别用于：
 
-- `docs-list`: 列出目标仓 `docs/` 下当前可参考的文档入口，默认隐藏 `archive`
-- `docs-lint`: 校验目标仓文档的 front matter 是否满足约定
+- `docs-list`: 列出目标仓 `docs/` 下当前可参考的文档入口，默认隐藏 `archive`，可按 `version/domain` 缩小范围，必要时输出 JSON
+- `docs-lint`: 校验目标仓文档的 front matter 是否满足约定，也会拦截 `TODO`、`待补充`、`修改前` 这类没有筛选价值的占位写法
 - `docs-migrate`: 给旧文档补齐统一模板，可配合 `--write` 直接落盘
 - `node --test tests/*.test.mjs`: 验证安装脚本、文档脚本和元数据规则没有回归
 
@@ -116,8 +118,8 @@ source:
 
 这个仓里默认带两个独立 Skill：
 
-- `kernel-docs-system`: 列文档、校验 front matter、迁移旧文档
-- `kernel-code-to-docs`: 读代码后，把调研结果直接写进对应领域目录
+- `kernel-docs-system`: 负责文档入口发现、元数据校验、旧文档迁移和版本/领域落点判断
+- `kernel-code-to-docs`: 负责先判定落点、再读代码、最后沉淀成长期文档，并明确更新旧文还是新建
 
 安装脚本会把这两个 Skill 安装到 Claude Code 和 OpenCode；如果本机已经存在 `~/.opencode/skills`，还会额外把当前仓的 skill 目录手动复制进去，不存在则跳过。
 它也会安装 `~/.claude/bin/docs-list`、`docs-lint`、`docs-migrate`，并同步全局 `~/.claude/CLAUDE.md` 里的 Docs 提示词。

@@ -62,6 +62,23 @@ export interface DocRecord {
 }
 
 const MARKDOWN_EXTENSIONS = new Set([".md", ".markdown"]);
+const PLACEHOLDER_SUMMARY_PATTERNS = [/^todo$/i, /^tbd$/i, /^待补充$/, /^待完善$/, /^补充中$/, /^占位$/, /^placeholder$/i];
+const LOW_SIGNAL_READ_WHEN_PATTERNS = [
+  /^todo$/i,
+  /^tbd$/i,
+  /^待补充$/,
+  /^待完善$/,
+  /^补充中$/,
+  /^占位$/,
+  /^placeholder$/i,
+  /^修改前$/,
+  /^需要时$/,
+  /^排查时$/,
+  /^调试时$/,
+  /^使用时$/,
+  /^相关时$/,
+  /^有需要时$/,
+];
 
 export function resolveDocsRoot(inputPath?: string): string {
   const basePath = resolve(inputPath ?? process.cwd());
@@ -136,6 +153,31 @@ export function isArchived(record: DocRecord): boolean {
   return record.archived;
 }
 
+export function filterDocuments(
+  docs: DocRecord[],
+  filters: {
+    version?: DocVersion;
+    domain?: DocDomain;
+    includeArchive?: boolean;
+  }
+): DocRecord[] {
+  return docs.filter((doc) => {
+    if (!filters.includeArchive && doc.archived) {
+      return false;
+    }
+    if (filters.version && doc.version !== filters.version) {
+      return false;
+    }
+    if (filters.domain) {
+      const domain = doc.archived ? doc.archivedDomain : doc.group === "unknown" ? null : doc.group;
+      if (domain !== filters.domain) {
+        return false;
+      }
+    }
+    return true;
+  });
+}
+
 export function validateDocLocation(relativePath: string): string | null {
   const normalized = normalizePath(relativePath);
   const segments = normalized.split("/").filter(Boolean);
@@ -184,6 +226,26 @@ export function buildFrontMatter(relativePath: string, content: string): string 
 
 export function writeContent(filePath: string, content: string) {
   writeFileSync(filePath, content, "utf8");
+}
+
+export function validateSummaryQuality(summary: string | null): string | null {
+  if (!summary) {
+    return null;
+  }
+
+  const normalized = summary.trim();
+  if (PLACEHOLDER_SUMMARY_PATTERNS.some((pattern) => pattern.test(normalized))) {
+    return `summary 过于占位化：${summary}`;
+  }
+
+  return null;
+}
+
+export function validateReadWhenQuality(readWhen: string[]): string[] {
+  return readWhen
+    .map((item) => item.trim())
+    .filter((item) => LOW_SIGNAL_READ_WHEN_PATTERNS.some((pattern) => pattern.test(item)))
+    .map((item) => `read_when 缺少任务触发语义：${item}`);
 }
 
 function resolveSelectedFiles(docsRoot: string, selectedFiles: string[]): string[] {

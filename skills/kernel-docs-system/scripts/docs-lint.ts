@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 
-import { loadDocuments, validateDocLocation } from "./lib.ts";
+import { loadDocuments, validateDocLocation, validateReadWhenQuality, validateSummaryQuality } from "./lib.ts";
 
 const args = process.argv.slice(2);
 const filesFlagIndex = args.indexOf("--files");
@@ -23,9 +23,18 @@ for (const doc of docs) {
 
   if (!doc.metadata.summary) {
     issues.push(`${doc.relativePath}: missing summary`);
+  } else {
+    const summaryIssue = validateSummaryQuality(doc.metadata.summary);
+    if (summaryIssue) {
+      issues.push(`${doc.relativePath}: ${summaryIssue}`);
+    }
   }
   if (doc.metadata.readWhen.length === 0) {
     issues.push(`${doc.relativePath}: missing read_when`);
+  } else {
+    for (const readWhenIssue of validateReadWhenQuality(doc.metadata.readWhen)) {
+      issues.push(`${doc.relativePath}: ${readWhenIssue}`);
+    }
   }
 }
 

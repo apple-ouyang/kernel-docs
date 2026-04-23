@@ -74,6 +74,125 @@ function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+test("docs-list 支持按 version 和 domain 过滤", () => {
+  withTempRepo((repoRoot) => {
+    writeFile(
+      join(repoRoot, "docs", "v2", "memory", "page-fault.md"),
+      `---
+summary: V2 缺页异常入口
+read_when:
+  - 修改 V2 缺页异常路径前
+---
+
+# V2 缺页异常入口
+`
+    );
+
+    writeFile(
+      join(repoRoot, "docs", "v3", "memory", "page-fault.md"),
+      `---
+summary: V3 缺页异常入口
+read_when:
+  - 修改 V3 缺页异常路径前
+---
+
+# V3 缺页异常入口
+`
+    );
+
+    writeFile(
+      join(repoRoot, "docs", "v3", "arch", "scheduler.md"),
+      `---
+summary: V3 调度器入口
+read_when:
+  - 修改调度器切换路径前
+---
+
+# V3 调度器入口
+`
+    );
+
+    const result = runTsx(DOCS_LIST, [repoRoot, "--version", "v3", "--domain", "memory"]);
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /Filters: version=v3, domain=memory/);
+    assert.match(result.stdout, /V3 \/ Memory/);
+    assert.match(result.stdout, /V3 缺页异常入口/);
+    assert.doesNotMatch(result.stdout, /V2 缺页异常入口/);
+    assert.doesNotMatch(result.stdout, /V3 调度器入口/);
+  });
+});
+
+test("docs-list 支持 json 输出", () => {
+  withTempRepo((repoRoot) => {
+    writeFile(
+      join(repoRoot, "docs", "v3", "debug", "crash.md"),
+      `---
+summary: V3 crash 调试入口
+read_when:
+  - 排查 crash 现场前
+---
+
+# V3 crash 调试入口
+`
+    );
+
+    const result = runTsx(DOCS_LIST, [repoRoot, "--json", "--domain", "debug"]);
+
+    assert.equal(result.status, 0, result.stderr);
+    const payload = JSON.parse(result.stdout);
+    assert.equal(payload.filters.domain, "debug");
+    assert.equal(payload.docs.length, 1);
+    assert.equal(payload.docs[0].relativePath, "v3/debug/crash.md");
+    assert.equal(payload.docs[0].summary, "V3 crash 调试入口");
+  });
+});
+
+test("docs-list 的 archive 隐藏计数跟随过滤范围", () => {
+  withTempRepo((repoRoot) => {
+    writeFile(
+      join(repoRoot, "docs", "v3", "memory", "page-fault.md"),
+      `---
+summary: V3 缺页异常入口
+read_when:
+  - 修改 V3 缺页异常路径前
+---
+
+# V3 缺页异常入口
+`
+    );
+
+    writeFile(
+      join(repoRoot, "docs", "archive", "memory", "old-page-fault.md"),
+      `---
+summary: 历史 V3 缺页异常笔记
+read_when:
+  - 需要追历史缺页异常结论时
+---
+
+# 历史 V3 缺页异常笔记
+`
+    );
+
+    writeFile(
+      join(repoRoot, "docs", "archive", "debug", "old-crash.md"),
+      `---
+summary: 历史 crash 调试笔记
+read_when:
+  - 需要追历史 crash 处理路径时
+---
+
+# 历史 crash 调试笔记
+`
+    );
+
+    const result = runTsx(DOCS_LIST, [repoRoot, "--domain", "memory"]);
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /archive 文档默认隐藏，使用 --all 显示（1 篇）/);
+  });
+});
+
 test("docs-lint 支持按文件校验并要求 read_when", () => {
   withTempRepo((repoRoot) => {
     writeFile(
@@ -104,6 +223,28 @@ summary: 安全约束
     assert.match(result.stdout + result.stderr, /v2\/security\/bad\.md/);
     assert.match(result.stdout + result.stderr, /missing read_when/i);
     assert.doesNotMatch(result.stdout + result.stderr, /v2\/arch\/good\.md/);
+  });
+});
+
+test("docs-lint 拒绝占位 summary 和空泛 read_when", () => {
+  withTempRepo((repoRoot) => {
+    writeFile(
+      join(repoRoot, "docs", "v3", "drivers", "placeholder.md"),
+      `---
+summary: TODO
+read_when:
+  - 修改前
+---
+
+# 驱动占位文档
+`
+    );
+
+    const result = runTsx(DOCS_LINT, [repoRoot]);
+
+    assert.notEqual(result.status, 0, "lint 应该失败");
+    assert.match(result.stdout + result.stderr, /summary 过于占位化/);
+    assert.match(result.stdout + result.stderr, /read_when 缺少任务触发语义/);
   });
 });
 
