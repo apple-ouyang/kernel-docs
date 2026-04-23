@@ -128,9 +128,10 @@ read_when:
 
 ## Commands
 
-- `~/.claude/bin/docs-list ~/kernel-docs [--all] [--version <v2|v3|lite>] [--domain <domain>] [--json]`
-- `~/.claude/bin/docs-lint ~/kernel-docs [--files <path...>]`
-- `~/.claude/bin/docs-migrate ~/kernel-docs [--files <path...>] --write`
+- `~/.claude/bin/docs-list [--all] [--version <v2|v3|lite>] [--domain <domain>] [--json]`
+- `~/.claude/bin/docs-lint [--files <path...>]`
+- `~/.claude/bin/docs-migrate [--files <path...>] --write`
+- 不传仓路径时，这些命令默认操作 `~/kernel-docs`
 
 ## Output Contract
 

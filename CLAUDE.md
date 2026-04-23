@@ -63,9 +63,9 @@
 
 ## 默认流程
 
-1. 编写或修改文档前，先运行 `~/.claude/bin/docs-list ~/kernel-docs`
-2. 提交前运行 `~/.claude/bin/docs-lint ~/kernel-docs`
-3. 旧文档补格式时运行 `~/.claude/bin/docs-migrate ~/kernel-docs --write`
+1. 编写或修改文档前，先运行 `~/.claude/bin/docs-list`
+2. 提交前运行 `~/.claude/bin/docs-lint`
+3. 旧文档补格式时运行 `~/.claude/bin/docs-migrate --write`
 4. 本地提交默认依赖 `.githooks/pre-commit`
 5. docs-only 任务默认走 `kernel-docs-system`
 6. 代码调研沉淀任务默认走 `kernel-code-to-docs`

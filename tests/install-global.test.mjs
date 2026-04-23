@@ -1,6 +1,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { chmodSync, existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  existsSync,
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -52,11 +62,67 @@ test("install-global-bin 安装全局 wrapper 并记录当前仓路径", () => {
 
     const envContent = readFileSync(envPath, "utf8");
     assert.match(envContent, /KERNEL_DOCS_REPO=".*\/kernel-docs"/);
+    assert.match(envContent, /KERNEL_DOCS_DEFAULT_DOCS_REPO=".*\/kernel-docs"/);
 
     const wrapperContent = readFileSync(docsListPath, "utf8");
     assert.match(wrapperContent, /source "\$HOME\/\.claude\/kernel-docs\.env"/);
-    assert.match(wrapperContent, /exec "\$KERNEL_DOCS_REPO\/scripts\/run-tsx\.sh" "\$KERNEL_DOCS_REPO\/scripts\/docs-list\.ts" "\$@"/);
+    assert.match(wrapperContent, /if \[ "\$\{#args\[@\]\}" -eq 0 \]; then/);
+    assert.match(wrapperContent, /elif \[\[ "\$\{args\[0\]\}" == -\* \]\]; then/);
+    assert.match(wrapperContent, /args=\( "\$KERNEL_DOCS_DEFAULT_DOCS_REPO" "\$\{args\[@\]\}" \)/);
+    assert.match(
+      wrapperContent,
+      /exec "\$KERNEL_DOCS_REPO\/scripts\/run-tsx\.sh" "\$KERNEL_DOCS_REPO\/scripts\/docs-list\.ts" "\$\{args\[@\]\}"/
+    );
     assert.ok((statSync(docsListPath).mode & 0o111) !== 0, "wrapper 应该可执行");
+  });
+});
+
+test("docs-list wrapper 无参时默认读取 ~/kernel-docs", () => {
+  withTempHome((homeDir) => {
+    symlinkSync(REPO_ROOT, join(homeDir, "kernel-docs"));
+
+    const installResult = run("bash", [INSTALL_GLOBAL_BIN], {
+      env: { HOME: homeDir },
+    });
+    assert.equal(installResult.status, 0, installResult.stderr);
+
+    const result = run("bash", [join(homeDir, ".claude", "bin", "docs-list")], {
+      env: { HOME: homeDir },
+    });
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /Docs root: .*\/kernel-docs\/docs/);
+  });
+});
+
+test("docs-lint wrapper 在只传 flag 时仍默认读取 ~/kernel-docs", () => {
+  withTempHome((homeDir) => {
+    const docsDir = join(homeDir, "kernel-docs", "docs", "v2", "memory");
+    mkdirSync(docsDir, { recursive: true });
+    writeFileSync(
+      join(docsDir, "page-fault.md"),
+      `---
+summary: 页故障处理链路
+read_when:
+  - 修改缺页异常处理前
+---
+
+# page fault
+`,
+      "utf8"
+    );
+
+    const installResult = run("bash", [INSTALL_GLOBAL_BIN], {
+      env: { HOME: homeDir },
+    });
+    assert.equal(installResult.status, 0, installResult.stderr);
+
+    const result = run("bash", [join(homeDir, ".claude", "bin", "docs-lint"), "--files", "docs/v2/memory/page-fault.md"], {
+      env: { HOME: homeDir },
+    });
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /文档元数据校验通过，共 1 篇。/);
   });
 });
 
@@ -106,7 +172,7 @@ test("sync-global-claude 在文档系统小节后插入受管区块", () => {
     const content = readFileSync(join(claudeDir, "CLAUDE.md"), "utf8");
     assert.match(content, /<!-- kernel-docs:managed:start -->/);
     assert.match(content, /长期文档仓固定入口是 `~\/kernel-docs`/);
-    assert.match(content, /必须使用 `~\/\.claude\/bin\/docs-list` 命令列出当前有哪些文档可以参考/);
+    assert.match(content, /必须使用 `~\/\.claude\/bin\/docs-list` 命令列出当前有哪些文档可以参考；不传路径时默认读取 `~\/kernel-docs`/);
     assert.match(content, /长期文档默认写入 `~\/kernel-docs\/docs\/<version>\/<domain>\/topic\.md`/);
     assert.match(content, /当前 kernel-docs 安装源：`\/tmp\/kernel-docs-a`/);
   });

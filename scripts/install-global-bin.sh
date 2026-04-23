@@ -10,6 +10,7 @@ mkdir -p "$BIN_DIR"
 
 cat >"$ENV_PATH" <<EOF
 KERNEL_DOCS_REPO="${ROOT_DIR}"
+KERNEL_DOCS_DEFAULT_DOCS_REPO="${HOME}/kernel-docs"
 EOF
 
 install_wrapper() {
@@ -20,7 +21,13 @@ install_wrapper() {
 #!/usr/bin/env bash
 set -euo pipefail
 source "\$HOME/.claude/kernel-docs.env"
-exec "\$KERNEL_DOCS_REPO/scripts/run-tsx.sh" "\$KERNEL_DOCS_REPO/scripts/${target}" "\$@"
+args=( "\$@" )
+if [ "\${#args[@]}" -eq 0 ]; then
+  args=( "\$KERNEL_DOCS_DEFAULT_DOCS_REPO" )
+elif [[ "\${args[0]}" == -* ]]; then
+  args=( "\$KERNEL_DOCS_DEFAULT_DOCS_REPO" "\${args[@]}" )
+fi
+exec "\$KERNEL_DOCS_REPO/scripts/run-tsx.sh" "\$KERNEL_DOCS_REPO/scripts/${target}" "\${args[@]}"
 EOF
 
   chmod +x "${BIN_DIR}/${name}"

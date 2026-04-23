@@ -23,6 +23,6 @@ chmod +x "$ROOT_DIR"/skills/kernel-docs-system/scripts/*.ts
 
 echo "环境检查通过。"
 echo "可以使用："
-echo "  ~/.claude/bin/docs-list ~/kernel-docs"
-echo "  ~/.claude/bin/docs-lint ~/kernel-docs"
-echo "  ~/.claude/bin/docs-migrate ~/kernel-docs --write"
+echo "  ~/.claude/bin/docs-list"
+echo "  ~/.claude/bin/docs-lint"
+echo "  ~/.claude/bin/docs-migrate --write"

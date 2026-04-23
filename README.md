@@ -16,11 +16,11 @@
 常用命令：
 
 ```bash
-~/.claude/bin/docs-list ~/kernel-docs
-~/.claude/bin/docs-list ~/kernel-docs --version v3 --domain memory
-~/.claude/bin/docs-list ~/kernel-docs --json
-~/.claude/bin/docs-lint ~/kernel-docs
-~/.claude/bin/docs-migrate ~/kernel-docs --write
+~/.claude/bin/docs-list
+~/.claude/bin/docs-list --version v3 --domain memory
+~/.claude/bin/docs-list --json
+~/.claude/bin/docs-lint
+~/.claude/bin/docs-migrate --write
 node --test tests/*.test.mjs
 ```
 
@@ -32,7 +32,7 @@ node --test tests/*.test.mjs
 - `node --test tests/*.test.mjs`: 验证安装脚本、文档脚本和元数据规则没有回归
 
 如果系统里没有 `tsx`，脚本会自动先尝试 `npm install -g tsx`，失败后再回退到 `~/.claude/tools/tsx` 里的用户目录安装；两种方式都失败时，才提示手工安装。
-文档操作的推荐入口固定是 `~/.claude/bin/docs-*`，长期文档仓的固定路径是 `~/kernel-docs`。这样即使你当前人在别的代码仓里，也不会把文档误写回代码仓。
+文档操作的推荐入口固定是 `~/.claude/bin/docs-*`。不传仓路径时，这些命令默认操作 `~/kernel-docs`；如果你需要处理别的文档仓，仍然可以显式传目标路径。这样即使你当前人在别的代码仓里，也不会把文档误写回代码仓。
 
 ## 安装内容
 

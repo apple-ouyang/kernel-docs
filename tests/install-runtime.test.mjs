@@ -145,9 +145,9 @@ exit 92
 
     assert.equal(result.status, 0, result.stderr);
     assert.equal(existsSync(join(homeDir, ".claude", "tools", "tsx", "bin", "tsx")), true);
-    assert.match(result.stdout, /~\/\.claude\/bin\/docs-list ~\/kernel-docs/);
-    assert.match(result.stdout, /~\/\.claude\/bin\/docs-lint ~\/kernel-docs/);
-    assert.match(result.stdout, /~\/\.claude\/bin\/docs-migrate ~\/kernel-docs --write/);
+    assert.match(result.stdout, /~\/\.claude\/bin\/docs-list/);
+    assert.match(result.stdout, /~\/\.claude\/bin\/docs-lint/);
+    assert.match(result.stdout, /~\/\.claude\/bin\/docs-migrate --write/);
     assert.doesNotMatch(result.stdout, /npm run docs:/);
 
     const npmLog = readFileSync(npmLogPath, "utf8");
