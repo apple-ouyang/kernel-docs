@@ -51,7 +51,7 @@ for (const [label, records] of groups) {
   console.log(label);
   for (const record of records) {
     const summary = record.metadata.summary ?? record.metadata.title ?? "缺少 summary";
-    console.log(`- ${record.relativePath}`);
+    console.log(`- ${record.fullPath}`);
     console.log(`  Summary: ${summary}`);
     if (record.metadata.readWhen.length > 0) {
       console.log("  Read when:");

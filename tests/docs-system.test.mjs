@@ -59,14 +59,20 @@ read_when:
     );
 
     const result = runTsx(DOCS_LIST, [repoRoot]);
+    const visiblePath = join(repoRoot, "docs", "v3", "memory", "overview-memory.md");
+    const hiddenPath = join(repoRoot, "docs", "archive", "memory", "old-memory-notes.md");
 
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout, /V3 \/ Memory/);
-    assert.match(result.stdout, /v3\/memory\/overview-memory\.md/);
-    assert.doesNotMatch(result.stdout, /v3\/archive\/memory\/old-memory-notes\.md/);
+    assert.match(result.stdout, new RegExp(escapeRegExp(visiblePath)));
+    assert.doesNotMatch(result.stdout, new RegExp(escapeRegExp(hiddenPath)));
     assert.match(result.stdout, /archive 文档默认隐藏/);
   });
 });
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 test("docs-lint 支持按文件校验并要求 read_when", () => {
   withTempRepo((repoRoot) => {
