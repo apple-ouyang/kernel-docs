@@ -323,7 +323,7 @@ test("uninstall.sh 非交互调用 skills remove 并清理全局安装痕迹", (
       npxScript: `#!/usr/bin/env bash
 set -euo pipefail
 printf '%s\\n' "$*" >> "$FAKE_NPX_LOG"
-if [ "$#" -ge 8 ] && [ "$1" = "-y" ] && [ "$2" = "skills" ] && [ "$3" = "remove" ] && [ "$4" = "kernel-docs-system" ] && [ "$5" = "kernel-code-research" ] && [ "$6" = "-g" ] && [ "$7" = "-a" ] && [ "$8" = "claude-code" ]; then
+if [ "$#" -ge 8 ] && [ "$1" = "-y" ] && [ "$2" = "skills" ] && [ "$3" = "remove" ] && [ "$4" = "kernel-docs-system" ] && [ "$5" = "kernel-code-to-docs" ] && [ "$6" = "-g" ] && [ "$7" = "-a" ] && [ "$8" = "claude-code" ]; then
   exit 0
 fi
 echo "unexpected npx args: $*" >&2
@@ -359,7 +359,7 @@ exit 97
     assert.equal(result.status, 0, result.stderr);
 
     const npxLog = readFileSync(npxLogPath, "utf8");
-    assert.match(npxLog, /-y skills remove kernel-docs-system kernel-code-research -g -a claude-code -y/);
+    assert.match(npxLog, /-y skills remove kernel-docs-system kernel-code-to-docs -g -a claude-code -y/);
     assert.equal(existsSync(join(claudeDir, "kernel-docs.env")), false);
     assert.equal(existsSync(join(claudeDir, "bin", "docs-list")), false);
     assert.equal(existsSync(join(claudeDir, "bin", "docs-lint")), false);

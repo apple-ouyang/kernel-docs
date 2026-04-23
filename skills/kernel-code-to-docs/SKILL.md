@@ -1,9 +1,9 @@
 ---
-name: kernel-code-research
+name: kernel-code-to-docs
 description: Use when reading kernel, OS, or low-level system code before documenting it. Trigger whenever the user asks to understand how memory, filesystem, drivers, security, debug, DFX, boot, scheduler, IPC, or other core subsystems work, especially if the goal is to turn code reading into a durable design document under `docs/`.
 ---
 
-# Kernel Code Research
+# Kernel Code To Docs
 
 ## Overview
 

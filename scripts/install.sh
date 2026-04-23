@@ -11,7 +11,7 @@ if ! npx -y skills --help >/dev/null 2>&1; then
   exit 1
 fi
 
-npx -y skills add "$ROOT_DIR" --full-depth -g -a claude-code -s kernel-docs-system kernel-code-research -y
+npx -y skills add "$ROOT_DIR" --full-depth -g -a claude-code -s kernel-docs-system kernel-code-to-docs -y
 
 bash "$ROOT_DIR/scripts/install-global-bin.sh"
 bash "$ROOT_DIR/scripts/run-tsx.sh" "$ROOT_DIR/scripts/sync-global-claude.ts"

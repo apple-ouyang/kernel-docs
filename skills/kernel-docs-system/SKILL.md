@@ -46,9 +46,9 @@ description: Use when working in repositories that treat kernel and system docs 
 
 ## Commands
 
-- 列出文档：`@scripts/docs-list.ts [repo-root] [--all]`
-- 校验元数据：`@scripts/docs-lint.ts [repo-root] [--files <path...>]`
-- 为旧文档补模板：`@scripts/docs-migrate.ts [repo-root] [--files <path...>] --write`
+- 列出文档：`~/.claude/bin/docs-list [repo-root] [--all]`
+- 校验元数据：`~/.claude/bin/docs-lint [repo-root] [--files <path...>]`
+- 为旧文档补模板：`~/.claude/bin/docs-migrate [repo-root] [--files <path...>] --write`
 
 ## Front Matter
 
@@ -127,4 +127,4 @@ read_when:
 
 ## Notes
 
-脚本实现位于当前 skill 的 `scripts/`。仓库级安装入口是根目录的 `scripts/install.sh`，会依次做环境检查、安装本地 pre-commit，并把 `kernel-docs-system` 和 `kernel-code-research` 安装到 Claude Code。
+脚本实现位于当前 skill 的 `scripts/`。仓库级安装入口是根目录的 `scripts/install.sh`，会依次做环境检查、安装本地 pre-commit，并把 `kernel-docs-system` 和 `kernel-code-to-docs` 安装到 Claude Code。
