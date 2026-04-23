@@ -35,6 +35,8 @@ export const DOC_VERSION_LABELS: Record<DocVersion, string> = {
 
 export interface DocMetadata {
   hasFrontMatter: boolean;
+  hasSummaryField: boolean;
+  hasReadWhenField: boolean;
   summary: string | null;
   readWhen: string[];
   title: string | null;
@@ -132,6 +134,8 @@ export function parseMarkdown(content: string): DocMetadata {
 
   return {
     hasFrontMatter: Boolean(frontMatterMatch),
+    hasSummaryField: hasFrontMatterKey(frontMatter, "summary"),
+    hasReadWhenField: hasFrontMatterKey(frontMatter, "read_when"),
     summary: readScalar(frontMatter, "summary"),
     readWhen: readListOrScalar(frontMatter, "read_when"),
     title: readTitle(body),
@@ -194,7 +198,7 @@ export function validateDocLocation(relativePath: string): string | null {
 export function buildFrontMatter(relativePath: string, content: string): string {
   const parsed = parseMarkdown(content);
   if (parsed.hasFrontMatter) {
-    return content;
+    return ensureRequiredFrontMatterFields(content, parsed);
   }
 
   const frontMatter = [
@@ -206,6 +210,30 @@ export function buildFrontMatter(relativePath: string, content: string): string 
   ].join("\n");
 
   return `${frontMatter}${content}`;
+}
+
+function ensureRequiredFrontMatterFields(content: string, metadata: DocMetadata): string {
+  const frontMatterMatch = content.match(/^(---\n)([\s\S]*?)(\n---\n*)/);
+  if (!frontMatterMatch) {
+    return content;
+  }
+
+  const fieldsToAdd: string[] = [];
+  if (!metadata.hasSummaryField) {
+    fieldsToAdd.push('summary: ""');
+  }
+  if (!metadata.hasReadWhenField) {
+    fieldsToAdd.push("read_when: []");
+  }
+
+  if (fieldsToAdd.length === 0) {
+    return content;
+  }
+
+  const [, opening, frontMatter, closing] = frontMatterMatch;
+  const normalizedFrontMatter = frontMatter.endsWith("\n") || frontMatter.length === 0 ? frontMatter : `${frontMatter}\n`;
+  const updatedFrontMatter = `${opening}${normalizedFrontMatter}${fieldsToAdd.join("\n")}${closing}`;
+  return `${updatedFrontMatter}${content.slice(frontMatterMatch[0].length)}`;
 }
 
 export function writeContent(filePath: string, content: string) {
@@ -307,6 +335,11 @@ function readScalar(frontMatter: string, key: string): string | null {
     return null;
   }
   return stripQuotes(match[1].trim());
+}
+
+function hasFrontMatterKey(frontMatter: string, key: string): boolean {
+  const regex = new RegExp(`^${key}:\\s*`, "m");
+  return regex.test(frontMatter);
 }
 
 function readListOrScalar(frontMatter: string, key: string): string[] {

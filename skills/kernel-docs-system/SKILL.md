@@ -19,7 +19,7 @@ description: >
 - 先看当前仓有哪些长期文档入口
 - 根据 `summary` 和 `read_when` 决定先读哪篇
 - 校验 `docs/` 元数据质量
-- 为旧文档补最小 front matter
+- 为旧文档补空 YAML 头，或为已有 YAML 头补缺字段
 - 判断文档该落到哪个 `version/domain`
 
 ## Execution Modes
@@ -39,7 +39,7 @@ description: >
   - 同时检查路径、缺字段、占位 `summary`、空泛 `read_when`
 - `Init Front Matter`
   - 运行 `docs-init-frontmatter --write`
-  - 只补空的 YAML 外壳，不重写正文
+  - 没有 YAML 头时补空外壳；已有 YAML 头时只补缺字段，不重写正文
 - `Route`
   - 先判断版本，再判断领域，再决定是否需要抽查同主题旧文档
 
@@ -58,7 +58,7 @@ description: >
 - 文档路径固定为 `~/kernel-docs/docs/<version>/<domain>/topic.md`
 - 不使用 `plan` / `research` 深目录
 - `process` 已并入 `arch`
-- `docs-init-frontmatter` 只补空的 YAML 外壳，不补任何字段内容
+- `docs-init-frontmatter` 只补空的 YAML 外壳，或补缺失字段；不自动生成字段内容
 - `summary` 必须回答“这篇文档帮助做什么判断/操作”
 - `summary` 不能写成 `TODO`、`待补充`、`占位`
 - `read_when` 必须写成任务触发语句
@@ -162,7 +162,7 @@ read_when:
 
 - 这次应该先读哪些文档，以及为什么
 - 哪些文件元数据不合规
-- 哪些旧文档已补空 YAML 头
+- 哪些旧文档已补空 YAML 头，或哪些文档已补缺字段
 - 某篇文档更适合哪个 `version/domain`
 - 如果没有相关文档，为什么要转交 `kernel-code-to-docs`
 
@@ -170,6 +170,6 @@ read_when:
 
 - 入口发现：只看输出就能决定下一篇该读什么
 - 元数据校验：问题文件、问题类型、下一步动作都明确
-- 空 YAML 头初始化：正文原样保留，只补空外壳
+- 空 YAML 头初始化：正文原样保留，只补空外壳或缺字段
 - 路由：版本和领域判断都有依据
 - 缺文档时：不会停在入口层，而是明确转到 `kernel-code-to-docs`

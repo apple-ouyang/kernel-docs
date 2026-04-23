@@ -354,3 +354,46 @@ test("docs-init-frontmatter 只为旧文档补齐空的 front matter 外壳", ()
     assert.doesNotMatch(content, /Crash 路径调研\n---/);
   });
 });
+
+test("docs-init-frontmatter 会为已有 front matter 的文档补齐缺失字段", () => {
+  withTempRepo((repoRoot) => {
+    const missingReadWhenPath = join(repoRoot, "docs", "v2", "memory", "missing-read-when.md");
+    const missingSummaryPath = join(repoRoot, "docs", "v2", "memory", "missing-summary.md");
+
+    writeFile(
+      missingReadWhenPath,
+      `---
+summary: 缺页异常路径
+owner: kernel-team
+---
+
+# 缺页异常路径
+`
+    );
+
+    writeFile(
+      missingSummaryPath,
+      `---
+read_when:
+  - 修改页表路径前
+source: kernel:v2/mm/fault.c
+---
+
+# 页表路径
+`
+    );
+
+    const initResult = runTsx(DOCS_INIT_FRONTMATTER, [repoRoot, "--write"]);
+    assert.equal(initResult.status, 0, initResult.stderr);
+
+    const missingReadWhenContent = readFileSync(missingReadWhenPath, "utf8");
+    assert.match(missingReadWhenContent, /summary: 缺页异常路径/);
+    assert.match(missingReadWhenContent, /owner: kernel-team/);
+    assert.match(missingReadWhenContent, /read_when: \[\]/);
+
+    const missingSummaryContent = readFileSync(missingSummaryPath, "utf8");
+    assert.match(missingSummaryContent, /read_when:\n  - 修改页表路径前/);
+    assert.match(missingSummaryContent, /source: kernel:v2\/mm\/fault\.c/);
+    assert.match(missingSummaryContent, /summary: ""/);
+  });
+});

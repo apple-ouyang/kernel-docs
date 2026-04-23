@@ -67,7 +67,7 @@
 2. 如果今天尚未成功 pull 且工作区干净，先执行 `git pull --rebase`；工作区不干净时停止并说明原因
 3. 编写或修改文档前，先运行 `~/.claude/bin/docs-list`
 4. 提交前运行 `~/.claude/bin/docs-lint`
-5. 旧文档补空 YAML 头时运行 `~/.claude/bin/docs-init-frontmatter --write`
+5. 旧文档补空 YAML 头，或为已有 YAML 头补缺字段时运行 `~/.claude/bin/docs-init-frontmatter --write`
 6. 本地提交默认依赖 `.githooks/pre-commit`
 7. docs-only 任务默认走 `kernel-docs-system`
 8. 如果缺少相关文档，`kernel-docs-system` 默认单向转交 `kernel-code-to-docs`

@@ -28,7 +28,7 @@ node --test tests/*.test.mjs
 
 - `docs-list`: 列出目标仓 `docs/` 下当前可参考的文档入口，默认隐藏 `archive`，可按 `version/domain` 缩小范围，必要时输出 JSON
 - `docs-lint`: 校验目标仓文档的 front matter 是否满足约定，也会拦截 `TODO`、`待补充`、`修改前` 这类没有筛选价值的占位写法
-- `docs-init-frontmatter`: 给旧文档补齐空的 YAML front matter 外壳，可配合 `--write` 直接落盘
+- `docs-init-frontmatter`: 给旧文档补齐空的 YAML front matter 外壳，或为已有 YAML 头的文档补齐缺失字段，可配合 `--write` 直接落盘
 - `node --test tests/*.test.mjs`: 验证安装脚本、文档脚本和元数据规则没有回归
 
 如果系统里没有 `tsx`，脚本会自动先尝试 `npm install -g tsx`，失败后再回退到 `~/.claude/tools/tsx` 里的用户目录安装；两种方式都失败时，才提示手工安装。

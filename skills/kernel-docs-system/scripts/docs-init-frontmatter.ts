@@ -13,20 +13,22 @@ const repoArg =
 const selectedFiles = filesFlagIndex === -1 ? [] : args.slice(filesFlagIndex + 1).filter((arg) => arg !== "--write");
 
 const { docs } = loadDocuments(repoArg, selectedFiles);
-const targets = docs.filter((doc) => !doc.metadata.hasFrontMatter);
+const targets = docs.filter(
+  (doc) => !doc.metadata.hasFrontMatter || !doc.metadata.hasSummaryField || !doc.metadata.hasReadWhenField
+);
 
 if (targets.length === 0) {
-  console.log("没有需要补空 front matter 的文档。");
+  console.log("没有需要补空 YAML 头或缺失字段的文档。");
   process.exit(0);
 }
 
 if (!write) {
-  console.log("以下文档缺少 front matter：");
+  console.log("以下文档缺少 YAML 头或必填字段：");
   for (const doc of targets) {
     console.log(`- ${doc.relativePath}`);
   }
   console.log("");
-  console.log("加上 --write 后会为这些文档补齐空的 YAML front matter 外壳。");
+  console.log("加上 --write 后会为这些文档补齐空的 YAML front matter 外壳或缺失字段。");
   console.log("脚本不会自动生成 summary / read_when 内容。");
   process.exit(0);
 }
