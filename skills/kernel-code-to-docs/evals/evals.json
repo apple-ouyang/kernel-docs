@@ -48,6 +48,18 @@
       "prompt": "我现在在 RTOS_V3_master 读 V3 代码，但想顺手参考一下 Linux 旧实现，别把两边混成一篇。",
       "expected_output": "应该以 docs/v3 为默认阅读面，只有在用户明确要求时才补读 docs/v2，并在输出里区分当前实现与历史参考，不混写成同一层结论。",
       "files": []
+    },
+    {
+      "id": 9,
+      "prompt": "帮我把 docs 目录里缺 front matter 的文档都补一下，再检查哪些 read_when 写得太空。",
+      "expected_output": "不应路由到 kernel-code-to-docs；这属于 docs-only 入口维护，应该交给 kernel-docs-system。",
+      "files": []
+    },
+    {
+      "id": 10,
+      "prompt": "把这篇完成的调研归档，并先把当前还有效的知识上浮到 active 阅读面。",
+      "expected_output": "不应继续停留在 kernel-code-to-docs；应该明确这是 archive/knowledge-lift 流程，不是代码调研沉淀任务。",
+      "files": []
     }
   ]
 }

@@ -54,6 +54,18 @@
       "prompt": "我只要一份机器可读的 docs 入口列表，后面我要自己做二次筛选。",
       "expected_output": "应该允许输出结构化入口信息，至少包含路径、summary、read_when、version、domain 和 archive 状态。",
       "files": []
+    },
+    {
+      "id": 10,
+      "prompt": "把这篇已经完成的方案文档归档掉，顺手把还有效的规则上浮到当前阅读面。",
+      "expected_output": "不应继续留在 kernel-docs-system；应该明确指出这是 archive/knowledge-lift 流程，而不是普通 docs-list/lint/migrate 任务。",
+      "files": []
+    },
+    {
+      "id": 11,
+      "prompt": "帮我先读一下调度器代码，然后直接沉淀成一篇长期文档。",
+      "expected_output": "不应把主任务停留在 docs 入口维护；应该切到 kernel-code-to-docs，把 docs-system 只当作前置入口步骤。",
+      "files": []
     }
   ]
 }
