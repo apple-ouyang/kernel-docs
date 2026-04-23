@@ -250,7 +250,43 @@ exit 94
     const npxLog = readFileSync(npxLogPath, "utf8");
     assert.match(npxLog, /^-y skills --help$/m);
     assert.match(npxLog, /-y skills add .* -g -a claude-code .* -y/);
+    assert.match(npxLog, /-y skills add .* -g -a opencode .* -y/);
     assert.doesNotMatch(npxLog, /^skills --help$/m);
+  });
+});
+
+test("install.sh 在 ~/.opencode/skills 已存在时补拷贝 skill 目录", () => {
+  withTempHome((homeDir) => {
+    const npxLogPath = join(homeDir, "npx.log");
+    mkdirSync(join(homeDir, ".opencode", "skills"), { recursive: true });
+
+    const binDir = createFakeBin(homeDir, {
+      includeTsx: true,
+      npxScript: `#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\\n' "$*" >> "$FAKE_NPX_LOG"
+if [ "$#" -ge 3 ] && [ "$1" = "-y" ] && [ "$2" = "skills" ] && [ "$3" = "--help" ]; then
+  exit 0
+fi
+if [ "$#" -ge 4 ] && [ "$1" = "-y" ] && [ "$2" = "skills" ] && [ "$3" = "add" ]; then
+  exit 0
+fi
+echo "unexpected npx args: $*" >&2
+exit 98
+`,
+    });
+
+    const result = run("bash", [INSTALL_SH], {
+      env: {
+        HOME: homeDir,
+        PATH: scopedPath(binDir),
+        FAKE_NPX_LOG: npxLogPath,
+      },
+    });
+
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(existsSync(join(homeDir, ".opencode", "skills", "kernel-docs-system", "SKILL.md")), true);
+    assert.equal(existsSync(join(homeDir, ".opencode", "skills", "kernel-code-to-docs", "SKILL.md")), true);
   });
 });
 
@@ -323,7 +359,7 @@ test("uninstall.sh 非交互调用 skills remove 并清理全局安装痕迹", (
       npxScript: `#!/usr/bin/env bash
 set -euo pipefail
 printf '%s\\n' "$*" >> "$FAKE_NPX_LOG"
-if [ "$#" -ge 8 ] && [ "$1" = "-y" ] && [ "$2" = "skills" ] && [ "$3" = "remove" ] && [ "$4" = "kernel-docs-system" ] && [ "$5" = "kernel-code-to-docs" ] && [ "$6" = "-g" ] && [ "$7" = "-a" ] && [ "$8" = "claude-code" ]; then
+if [ "$#" -ge 8 ] && [ "$1" = "-y" ] && [ "$2" = "skills" ] && [ "$3" = "remove" ] && [ "$4" = "kernel-docs-system" ] && [ "$5" = "kernel-code-to-docs" ] && [ "$6" = "-g" ] && [ "$7" = "-a" ] && { [ "$8" = "claude-code" ] || [ "$8" = "opencode" ]; }; then
   exit 0
 fi
 echo "unexpected npx args: $*" >&2
@@ -360,6 +396,7 @@ exit 97
 
     const npxLog = readFileSync(npxLogPath, "utf8");
     assert.match(npxLog, /-y skills remove kernel-docs-system kernel-code-to-docs -g -a claude-code -y/);
+    assert.match(npxLog, /-y skills remove kernel-docs-system kernel-code-to-docs -g -a opencode -y/);
     assert.equal(existsSync(join(claudeDir, "kernel-docs.env")), false);
     assert.equal(existsSync(join(claudeDir, "bin", "docs-list")), false);
     assert.equal(existsSync(join(claudeDir, "bin", "docs-lint")), false);

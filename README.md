@@ -35,7 +35,7 @@ node --test tests/*.test.mjs
 
 - 运行环境检查：确认 `node`、`npm`、`npx`、`git` 可用，并确保 `tsx` 可运行
 - 本仓 pre-commit：将当前仓的 `core.hooksPath` 指向 `.githooks`
-- Claude Code skills：安装 `kernel-docs-system` 和 `kernel-code-to-docs`
+- Claude Code / OpenCode skills：安装 `kernel-docs-system` 和 `kernel-code-to-docs`；若 `~/.opencode/skills` 已存在，再额外手动复制一份进去
 - 全局命令：安装 `~/.claude/bin/docs-list`、`docs-lint`、`docs-migrate`
 - 全局提示词：把受管的 Docs 规则写入 `~/.claude/CLAUDE.md`
 - 全局环境文件：写入 `~/.claude/kernel-docs.env`，让全局命令知道当前 `kernel-docs` 仓的位置
@@ -119,7 +119,7 @@ source:
 - `kernel-docs-system`: 列文档、校验 front matter、迁移旧文档
 - `kernel-code-to-docs`: 读代码后，把调研结果直接写进对应领域目录
 
-安装脚本会把这两个 Skill 安装到 Claude Code。
+安装脚本会把这两个 Skill 安装到 Claude Code 和 OpenCode；如果本机已经存在 `~/.opencode/skills`，还会额外把当前仓的 skill 目录手动复制进去，不存在则跳过。
 它也会安装 `~/.claude/bin/docs-list`、`docs-lint`、`docs-migrate`，并同步全局 `~/.claude/CLAUDE.md` 里的 Docs 提示词。
 
 ## 卸载

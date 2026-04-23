@@ -5,6 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 bash "$ROOT_DIR/scripts/uninstall-pre-commit.sh"
 npx -y skills remove kernel-docs-system kernel-code-to-docs -g -a claude-code -y
+npx -y skills remove kernel-docs-system kernel-code-to-docs -g -a opencode -y
 bash "$ROOT_DIR/scripts/uninstall-global-bin.sh"
 node "$ROOT_DIR/scripts/remove-global-claude-block.mjs"
 
