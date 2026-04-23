@@ -1,6 +1,11 @@
 ---
 name: kernel-docs-system
-description: Use when you need to treat `docs/**/*.md` as a routed docs system for kernel and low-level repos: list doc entrypoints, choose what to read from `summary` and `read_when`, lint metadata quality, migrate legacy docs to the shared front matter, or decide the correct `version/domain` landing path before writing. Do not use for archive and knowledge-lift work, or when the main job is reading code and turning that code reading into a durable doc.
+description: >
+  Use when you need to treat `docs/**/*.md` as a routed docs system for kernel and low-level repos:
+  list doc entrypoints, choose what to read from `summary` and `read_when`, lint metadata quality,
+  migrate legacy docs to the shared front matter, or decide the correct `version/domain` landing path
+  before writing. Do not use for archive and knowledge-lift work, or when the main job is reading code
+  and turning that code reading into a durable doc.
 ---
 
 # Docs System
