@@ -63,9 +63,14 @@
 
 ## 默认流程
 
-1. 编写或修改文档前，先运行 `~/.claude/bin/docs-list`
-2. 提交前运行 `~/.claude/bin/docs-lint`
-3. 旧文档补格式时运行 `~/.claude/bin/docs-migrate --write`
-4. 本地提交默认依赖 `.githooks/pre-commit`
-5. docs-only 任务默认走 `kernel-docs-system`
-6. 代码调研沉淀任务默认走 `kernel-code-to-docs`
+1. 进入 `kernel-docs-system` 或 `kernel-code-to-docs` 前，先检查当前 `repo_root + branch` 今天是否已经成功执行过 `git pull --rebase`
+2. 如果今天尚未成功 pull 且工作区干净，先执行 `git pull --rebase`；工作区不干净时停止并说明原因
+3. 编写或修改文档前，先运行 `~/.claude/bin/docs-list`
+4. 提交前运行 `~/.claude/bin/docs-lint`
+5. 旧文档补格式时运行 `~/.claude/bin/docs-migrate --write`
+6. 本地提交默认依赖 `.githooks/pre-commit`
+7. docs-only 任务默认走 `kernel-docs-system`
+8. 如果缺少相关文档，`kernel-docs-system` 默认转交 `kernel-code-to-docs`
+9. 代码调研沉淀任务默认走 `kernel-code-to-docs`
+10. `kernel-code-to-docs` 发现文档与代码不一致时，默认按代码修正文档
+11. `kernel-code-to-docs` 落盘后默认提交文档改动，并在 commit 成功后执行 `git mr --yes`

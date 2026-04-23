@@ -125,8 +125,25 @@ source:
 
 这个仓里默认带两个独立 Skill：
 
-- `kernel-docs-system`: 负责文档入口发现、元数据校验、旧文档迁移和版本/领域落点判断
-- `kernel-code-to-docs`: 负责先判定落点、再读代码、最后沉淀成长期文档，并明确更新旧文还是新建
+- `kernel-docs-system`: 负责先做每日同步检查，再做文档入口发现、元数据校验、旧文档迁移和版本/领域落点判断；如果缺少相关文档，默认转交 `kernel-code-to-docs`
+- `kernel-code-to-docs`: 负责先做每日同步检查、再判定落点、再读代码、按代码修正文档、最后沉淀成长期文档，并在落盘后提交文档改动、执行 `git mr --yes`
+
+默认同步规则：
+
+- 每次进入任一 Skill，都先检查当前 `repo_root + branch` 今天是否已经成功执行过 `git pull --rebase`
+- 同一个 `repo_root + branch` 在同一个自然日最多成功 pull 一次
+- pull 状态记录在 `~/.claude/kernel-docs-pull-state.json`
+- 如果今天尚未成功 pull 且工作区干净，则先执行 `git pull --rebase`
+- 如果工作区不干净，则停止并报告无法安全 rebase
+
+默认文档提交模板：
+
+- 标题：`docs(<domain>): <补充或更新><主题>文档`
+- 正文至少包含“原因：”和“改动：”，必要时补“影响：”
+
+默认真源规则：
+
+- 代码是事实真源；如果已有文档与代码不一致，优先修改文档，不保留与代码冲突的描述
 
 安装脚本会在运行时目录已存在时，直接把这两个 Skill 复制覆盖到对应目录；不存在就跳过，不会强行创建新的 host 运行时目录。
 它也会安装 `~/.claude/bin/docs-list`、`docs-lint`、`docs-migrate`，同步全局 `~/.claude/CLAUDE.md` 里的 Docs 提示词，并确保长期文档仓固定入口可见为 `~/kernel-docs`。项目级维护规则直接写在仓内 `CLAUDE.md`，并由 `AGENTS.md` 软链接过去。

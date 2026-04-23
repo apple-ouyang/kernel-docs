@@ -24,9 +24,16 @@ description: >
 
 ## Execution Modes
 
+- `Daily Sync`
+  - 每次进入本 Skill 都先检查当前 `repo_root + branch` 今天是否已经成功执行过 `git pull --rebase`
+  - 同一个 `repo_root + branch` 在同一个自然日最多成功 pull 一次
+  - 状态记录在 `~/.claude/kernel-docs-pull-state.json`
+  - 如果今天尚未成功 pull，且工作区干净，则先执行 `git pull --rebase`
+  - 如果工作区不干净，先停止并明确说明无法安全 rebase，不要跳过后继续
 - `Discover`
   - 先跑 `docs-list`
   - 需要时用 `--version`、`--domain`、`--json` 缩小范围
+  - 如果没有命中文档，或命中的文档明显不覆盖当前问题，则调用 `kernel-code-to-docs` skill
 - `Lint`
   - 运行 `docs-lint`
   - 同时检查路径、缺字段、占位 `summary`、空泛 `read_when`
@@ -40,6 +47,10 @@ description: >
 
 ## Core Rules
 
+- 每次进入本 Skill，先做一次每日 `git pull --rebase` 检查，再继续后续动作
+- 每日 pull 的频率按“自然日 + `repo_root + branch`”控制，不按 24 小时滑窗控制
+- 只有成功 pull 才更新 `~/.claude/kernel-docs-pull-state.json`
+- pull 失败时不要记成功，也不要伪装成已同步
 - 文档入口发现必须先走 `docs-list`
 - 不要用 `rg`、`grep`、`find` 直接扫描 `docs/` 决定先读哪篇
 - `archive` 默认隐藏；只有显式 `--all` 才展示
@@ -52,6 +63,7 @@ description: >
 - `summary` 不能写成 `TODO`、`待补充`、`占位`
 - `read_when` 必须写成任务触发语句
 - `read_when` 不能只写“修改前”“需要时”“排查时”
+- `Discover` / `Route` 场景下，如果文档入口不足以覆盖当前问题，默认继续读代码并转交 `kernel-code-to-docs`，不要停在“没有文档”
 
 ## Version And Domain Rules
 
@@ -131,8 +143,13 @@ read_when:
 
 这时改走 archive / knowledge-lift 流程或 `kernel-code-to-docs`。
 
+如果命中下面情况，也先停下并说明原因：
+
+- 今天还没成功 pull，但当前工作区不干净，无法安全执行 `git pull --rebase`
+
 ## Commands
 
+- `git pull --rebase`
 - `~/.claude/bin/docs-list [--all] [--version <v2|v3|lite>] [--domain <domain>] [--json]`
 - `~/.claude/bin/docs-lint [--files <path...>]`
 - `~/.claude/bin/docs-migrate [--files <path...>] --write`
@@ -146,6 +163,7 @@ read_when:
 - 哪些文件元数据不合规
 - 哪些旧文档已补最小模板
 - 某篇文档更适合哪个 `version/domain`
+- 如果没有相关文档，为什么要转交 `kernel-code-to-docs`
 
 ## Done Criteria
 
@@ -153,3 +171,4 @@ read_when:
 - 元数据校验：问题文件、问题类型、下一步动作都明确
 - 迁移：正文原样保留，只补最小外壳
 - 路由：版本和领域判断都有依据
+- 缺文档时：不会停在入口层，而是明确转到 `kernel-code-to-docs`
